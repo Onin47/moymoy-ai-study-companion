@@ -11,6 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppStudyRouteImport } from './routes/_app.study'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppLibraryRouteImport } from './routes/_app.library'
+import { Route as AppChatRouteImport } from './routes/_app.chat'
+import { Route as AppQuizzesQuizIdRouteImport } from './routes/_app.quizzes.$quizId'
+import { Route as AppNotesNewRouteImport } from './routes/_app.notes.new'
+import { Route as AppNotesNoteIdRouteImport } from './routes/_app.notes.$noteId'
+import { Route as AppDecksDeckIdRouteImport } from './routes/_app.decks.$deckId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -21,30 +30,132 @@ const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStudyRoute = AppStudyRouteImport.update({
+  id: '/study',
+  path: '/study',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLibraryRoute = AppLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppChatRoute = AppChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppQuizzesQuizIdRoute = AppQuizzesQuizIdRouteImport.update({
+  id: '/quizzes/$quizId',
+  path: '/quizzes/$quizId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotesNewRoute = AppNotesNewRouteImport.update({
+  id: '/notes/new',
+  path: '/notes/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotesNoteIdRoute = AppNotesNoteIdRouteImport.update({
+  id: '/notes/$noteId',
+  path: '/notes/$noteId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDecksDeckIdRoute = AppDecksDeckIdRouteImport.update({
+  id: '/decks/$deckId',
+  path: '/decks/$deckId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppRoute
+  '/': typeof AppIndexRoute
   '/auth': typeof AuthRoute
+  '/chat': typeof AppChatRoute
+  '/library': typeof AppLibraryRoute
+  '/profile': typeof AppProfileRoute
+  '/study': typeof AppStudyRoute
+  '/decks/$deckId': typeof AppDecksDeckIdRoute
+  '/notes/$noteId': typeof AppNotesNoteIdRoute
+  '/notes/new': typeof AppNotesNewRoute
+  '/quizzes/$quizId': typeof AppQuizzesQuizIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AppRoute
   '/auth': typeof AuthRoute
+  '/chat': typeof AppChatRoute
+  '/library': typeof AppLibraryRoute
+  '/profile': typeof AppProfileRoute
+  '/study': typeof AppStudyRoute
+  '/': typeof AppIndexRoute
+  '/decks/$deckId': typeof AppDecksDeckIdRoute
+  '/notes/$noteId': typeof AppNotesNoteIdRoute
+  '/notes/new': typeof AppNotesNewRoute
+  '/quizzes/$quizId': typeof AppQuizzesQuizIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_app': typeof AppRoute
+  '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_app/chat': typeof AppChatRoute
+  '/_app/library': typeof AppLibraryRoute
+  '/_app/profile': typeof AppProfileRoute
+  '/_app/study': typeof AppStudyRoute
+  '/_app/': typeof AppIndexRoute
+  '/_app/decks/$deckId': typeof AppDecksDeckIdRoute
+  '/_app/notes/$noteId': typeof AppNotesNoteIdRoute
+  '/_app/notes/new': typeof AppNotesNewRoute
+  '/_app/quizzes/$quizId': typeof AppQuizzesQuizIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/chat'
+    | '/library'
+    | '/profile'
+    | '/study'
+    | '/decks/$deckId'
+    | '/notes/$noteId'
+    | '/notes/new'
+    | '/quizzes/$quizId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth'
-  id: '__root__' | '/_app' | '/auth'
+  to:
+    | '/auth'
+    | '/chat'
+    | '/library'
+    | '/profile'
+    | '/study'
+    | '/'
+    | '/decks/$deckId'
+    | '/notes/$noteId'
+    | '/notes/new'
+    | '/quizzes/$quizId'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/auth'
+    | '/_app/chat'
+    | '/_app/library'
+    | '/_app/profile'
+    | '/_app/study'
+    | '/_app/'
+    | '/_app/decks/$deckId'
+    | '/_app/notes/$noteId'
+    | '/_app/notes/new'
+    | '/_app/quizzes/$quizId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AppRoute: typeof AppRoute
+  AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
 }
 
@@ -64,11 +175,100 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/': {
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/study': {
+      id: '/_app/study'
+      path: '/study'
+      fullPath: '/study'
+      preLoaderRoute: typeof AppStudyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/library': {
+      id: '/_app/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof AppLibraryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/chat': {
+      id: '/_app/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof AppChatRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/quizzes/$quizId': {
+      id: '/_app/quizzes/$quizId'
+      path: '/quizzes/$quizId'
+      fullPath: '/quizzes/$quizId'
+      preLoaderRoute: typeof AppQuizzesQuizIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/notes/new': {
+      id: '/_app/notes/new'
+      path: '/notes/new'
+      fullPath: '/notes/new'
+      preLoaderRoute: typeof AppNotesNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/notes/$noteId': {
+      id: '/_app/notes/$noteId'
+      path: '/notes/$noteId'
+      fullPath: '/notes/$noteId'
+      preLoaderRoute: typeof AppNotesNoteIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/decks/$deckId': {
+      id: '/_app/decks/$deckId'
+      path: '/decks/$deckId'
+      fullPath: '/decks/$deckId'
+      preLoaderRoute: typeof AppDecksDeckIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppChatRoute: typeof AppChatRoute
+  AppLibraryRoute: typeof AppLibraryRoute
+  AppProfileRoute: typeof AppProfileRoute
+  AppStudyRoute: typeof AppStudyRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppDecksDeckIdRoute: typeof AppDecksDeckIdRoute
+  AppNotesNoteIdRoute: typeof AppNotesNoteIdRoute
+  AppNotesNewRoute: typeof AppNotesNewRoute
+  AppQuizzesQuizIdRoute: typeof AppQuizzesQuizIdRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppChatRoute: AppChatRoute,
+  AppLibraryRoute: AppLibraryRoute,
+  AppProfileRoute: AppProfileRoute,
+  AppStudyRoute: AppStudyRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppDecksDeckIdRoute: AppDecksDeckIdRoute,
+  AppNotesNoteIdRoute: AppNotesNoteIdRoute,
+  AppNotesNewRoute: AppNotesNewRoute,
+  AppQuizzesQuizIdRoute: AppQuizzesQuizIdRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  AppRoute: AppRoute,
+  AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
