@@ -3,13 +3,14 @@ import { Home, BookOpen, Brain, MessageCircle, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
-const tabs = [
+type Tab = { to: string; label: string; icon: typeof Home; exact?: boolean };
+const tabs: Tab[] = [
   { to: "/", label: "Home", icon: Home, exact: true },
   { to: "/library", label: "Library", icon: BookOpen },
   { to: "/study", label: "Study", icon: Brain },
   { to: "/chat", label: "Chat", icon: MessageCircle },
   { to: "/profile", label: "Profile", icon: User },
-] as const;
+];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
