@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useBlocker } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Play, Pause, RotateCcw, Coffee, Brain, Settings2 } from "lucide-react";
+import { Play, Pause, RotateCcw, Coffee, Brain, Settings2, Lock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 type Phase = "focus" | "break";
