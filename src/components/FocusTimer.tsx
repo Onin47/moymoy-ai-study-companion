@@ -251,13 +251,25 @@ export function FocusTimer() {
   );
 
   const onStart = () => {
+    endsAtRef.current = Date.now() + secondsLeft * 1000;
     setStatus("running");
     toast("Locked in 🔒", {
       description: "You can pause, but leaving will end the session.",
     });
   };
-  const onPause = () => setStatus("paused");
+  const onPause = () => {
+    if (endsAtRef.current) {
+      const remaining = Math.max(
+        0,
+        Math.round((endsAtRef.current - Date.now()) / 1000),
+      );
+      setSecondsLeft(remaining);
+    }
+    endsAtRef.current = null;
+    setStatus("paused");
+  };
   const onReset = () => {
+    endsAtRef.current = null;
     setStatus("idle");
     setSecondsLeft(totalSeconds);
   };
@@ -265,6 +277,7 @@ export function FocusTimer() {
   // "Give up" — reset focus session without reward, ask first
   const onGiveUp = () => {
     if (!confirm("End this focus session early? You won't earn XP for it.")) return;
+    endsAtRef.current = null;
     setStatus("idle");
     setPhase("focus");
     setSecondsLeft(preset.focus * 60);
