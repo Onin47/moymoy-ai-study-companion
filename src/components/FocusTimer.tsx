@@ -130,16 +130,67 @@ export function FocusTimer() {
     [secondsLeft, totalSeconds],
   );
 
-  const onStart = () => setStatus("running");
+  const onStart = () => {
+    setStatus("running");
+    toast("Locked in 🔒", {
+      description: "You can pause, but leaving will end the session.",
+    });
+  };
   const onPause = () => setStatus("paused");
   const onReset = () => {
     setStatus("idle");
     setSecondsLeft(totalSeconds);
   };
-  const onSkip = () => {
+
+  // "Give up" — reset focus session without reward, ask first
+  const onGiveUp = () => {
+    if (!confirm("End this focus session early? You won't earn XP for it.")) return;
     setStatus("idle");
-    setSecondsLeft(0);
+    setPhase("focus");
+    setSecondsLeft(preset.focus * 60);
+    toast("Session ended early — try again when you're ready 💜");
   };
+
+  // Lock the user in while a focus session is running
+  const isLocked = status === "running" && phase === "focus";
+
+  // Block in-app navigation
+  useBlocker({
+    shouldBlockFn: () => {
+      if (!isLocked) return false;
+      return !confirm(
+        "You're in a focus session. Leave anyway? Your progress won't be saved.",
+      );
+    },
+  });
+
+  // Block tab close / refresh / external nav
+  useEffect(() => {
+    if (!isLocked) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isLocked]);
+
+  // Nudge if the user switches tabs / minimizes
+  const awayCountRef = useRef(0);
+  useEffect(() => {
+    if (!isLocked) return;
+    const onVis = () => {
+      if (document.visibilityState === "hidden") {
+        awayCountRef.current += 1;
+      } else if (awayCountRef.current > 0) {
+        toast.warning("Eyes back here 👀", {
+          description: "MoyMoy noticed you stepped away. Stay with the session!",
+        });
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [isLocked]);
 
   // SVG ring
   const R = 78;
