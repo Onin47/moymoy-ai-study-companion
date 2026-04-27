@@ -331,17 +331,32 @@ export function FocusTimer() {
           )}
           <button
             onClick={onReset}
-            className="inline-flex items-center justify-center px-4 py-3 rounded-2xl glass text-ink text-sm font-semibold"
+            disabled={isLocked}
+            className="inline-flex items-center justify-center px-4 py-3 rounded-2xl glass text-ink text-sm font-semibold disabled:opacity-40"
             aria-label="Reset"
           >
             <RotateCcw className="h-4 w-4" />
           </button>
-          <button
-            onClick={onSkip}
-            className="inline-flex items-center justify-center px-4 py-3 rounded-2xl glass text-ink text-sm font-semibold"
-          >
-            Skip
-          </button>
+          {phase === "break" ? (
+            <button
+              onClick={() => {
+                setStatus("idle");
+                setSecondsLeft(0);
+              }}
+              className="inline-flex items-center justify-center px-4 py-3 rounded-2xl glass text-ink text-sm font-semibold"
+            >
+              Skip
+            </button>
+          ) : (
+            status !== "idle" && (
+              <button
+                onClick={onGiveUp}
+                className="inline-flex items-center justify-center px-4 py-3 rounded-2xl glass text-ink text-sm font-semibold"
+              >
+                End
+              </button>
+            )
+          )}
         </div>
 
         <div className="flex items-center justify-between mt-4 text-[11px] text-ink-soft">
