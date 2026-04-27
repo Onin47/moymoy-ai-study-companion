@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useBlocker } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Play, Pause, RotateCcw, Coffee, Brain, Settings2 } from "lucide-react";
+import { Play, Pause, RotateCcw, Coffee, Brain, Settings2, Lock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 type Phase = "focus" | "break";
@@ -129,16 +130,67 @@ export function FocusTimer() {
     [secondsLeft, totalSeconds],
   );
 
-  const onStart = () => setStatus("running");
+  const onStart = () => {
+    setStatus("running");
+    toast("Locked in 🔒", {
+      description: "You can pause, but leaving will end the session.",
+    });
+  };
   const onPause = () => setStatus("paused");
   const onReset = () => {
     setStatus("idle");
     setSecondsLeft(totalSeconds);
   };
-  const onSkip = () => {
+
+  // "Give up" — reset focus session without reward, ask first
+  const onGiveUp = () => {
+    if (!confirm("End this focus session early? You won't earn XP for it.")) return;
     setStatus("idle");
-    setSecondsLeft(0);
+    setPhase("focus");
+    setSecondsLeft(preset.focus * 60);
+    toast("Session ended early — try again when you're ready 💜");
   };
+
+  // Lock the user in while a focus session is running
+  const isLocked = status === "running" && phase === "focus";
+
+  // Block in-app navigation
+  useBlocker({
+    shouldBlockFn: () => {
+      if (!isLocked) return false;
+      return !confirm(
+        "You're in a focus session. Leave anyway? Your progress won't be saved.",
+      );
+    },
+  });
+
+  // Block tab close / refresh / external nav
+  useEffect(() => {
+    if (!isLocked) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isLocked]);
+
+  // Nudge if the user switches tabs / minimizes
+  const awayCountRef = useRef(0);
+  useEffect(() => {
+    if (!isLocked) return;
+    const onVis = () => {
+      if (document.visibilityState === "hidden") {
+        awayCountRef.current += 1;
+      } else if (awayCountRef.current > 0) {
+        toast.warning("Eyes back here 👀", {
+          description: "MoyMoy noticed you stepped away. Stay with the session!",
+        });
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [isLocked]);
 
   // SVG ring
   const R = 78;
@@ -147,30 +199,46 @@ export function FocusTimer() {
   const isFocus = phase === "focus";
 
   return (
-    <div className="rounded-3xl glass-card p-5 shadow-ios-lg relative overflow-hidden">
+    <div
+      className={`rounded-3xl glass-card p-5 shadow-ios-lg relative overflow-hidden transition-shadow ${
+        isLocked ? "ring-2 ring-[rgba(151,125,223,0.55)] shadow-cta" : ""
+      }`}
+    >
       <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/15" />
       <div className="absolute -left-12 -bottom-14 w-36 h-36 rounded-full bg-white/10" />
 
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            {isFocus ? (
+            {isLocked ? (
+              <Lock className="h-4 w-4 text-ink" />
+            ) : isFocus ? (
               <Brain className="h-4 w-4 text-ink-soft" />
             ) : (
               <Coffee className="h-4 w-4 text-ink-soft" />
             )}
-            <p className="text-[10px] uppercase tracking-[0.2em] text-ink-soft font-semibold">
-              {isFocus ? "Focus" : "Break"} · {preset.label}
+            <p className="text-[10px] uppercase tracking-[0.2em] text-ink font-semibold">
+              {isLocked ? "Locked in" : isFocus ? "Focus" : "Break"} · {preset.label}
             </p>
           </div>
           <button
-            onClick={() => setShowSettings((s) => !s)}
-            className="h-8 w-8 rounded-xl glass grid place-items-center text-ink"
+            onClick={() => !isLocked && setShowSettings((s) => !s)}
+            disabled={isLocked}
+            className="h-8 w-8 rounded-xl glass grid place-items-center text-ink disabled:opacity-40"
             aria-label="Timer settings"
           >
             <Settings2 className="h-4 w-4" />
           </button>
         </div>
+
+        {isLocked && (
+          <div className="flex items-start gap-2 rounded-2xl bg-white/30 border border-white/40 p-2.5 mb-3">
+            <AlertTriangle className="h-4 w-4 text-ink shrink-0 mt-0.5" />
+            <p className="text-[11px] text-ink leading-snug">
+              Focus mode is on — navigation is blocked. Pause to take a quick break, or end early without XP.
+            </p>
+          </div>
+        )}
 
         {showSettings && (
           <div className="flex gap-2 mb-4">
@@ -263,17 +331,32 @@ export function FocusTimer() {
           )}
           <button
             onClick={onReset}
-            className="inline-flex items-center justify-center px-4 py-3 rounded-2xl glass text-ink text-sm font-semibold"
+            disabled={isLocked}
+            className="inline-flex items-center justify-center px-4 py-3 rounded-2xl glass text-ink text-sm font-semibold disabled:opacity-40"
             aria-label="Reset"
           >
             <RotateCcw className="h-4 w-4" />
           </button>
-          <button
-            onClick={onSkip}
-            className="inline-flex items-center justify-center px-4 py-3 rounded-2xl glass text-ink text-sm font-semibold"
-          >
-            Skip
-          </button>
+          {phase === "break" ? (
+            <button
+              onClick={() => {
+                setStatus("idle");
+                setSecondsLeft(0);
+              }}
+              className="inline-flex items-center justify-center px-4 py-3 rounded-2xl glass text-ink text-sm font-semibold"
+            >
+              Skip
+            </button>
+          ) : (
+            status !== "idle" && (
+              <button
+                onClick={onGiveUp}
+                className="inline-flex items-center justify-center px-4 py-3 rounded-2xl glass text-ink text-sm font-semibold"
+              >
+                End
+              </button>
+            )
+          )}
         </div>
 
         <div className="flex items-center justify-between mt-4 text-[11px] text-ink-soft">
