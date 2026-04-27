@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Brain, Layers, FileQuestion, Sparkles, Target, Zap } from "lucide-react";
+import { Brain, Layers, FileQuestion, Sparkles, Target, Zap, Timer } from "lucide-react";
+import { FocusTimer } from "@/components/FocusTimer";
 
 export const Route = createFileRoute("/_app/study")({
   component: StudyPage,
