@@ -94,8 +94,21 @@ function StudyPage() {
         </div>
       </div>
 
+
+      {/* Focus timer */}
+      <div className="mb-5 fade-up fade-up-3">
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <Timer className="h-4 w-4 text-ink" />
+          <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-ink">
+            Focus timer
+          </h2>
+          <div className="h-px flex-1 ml-1 moy-divider" />
+        </div>
+        <FocusTimer />
+      </div>
+
       {/* Study controls */}
-      <div className="grid grid-cols-3 gap-3 mb-6 fade-up fade-up-3">
+      <div className="grid grid-cols-3 gap-3 mb-6 fade-up fade-up-4">
         <ControlCard icon={Layers} label="Flashcards" sub={`${decks.length} decks`} />
         <ControlCard icon={FileQuestion} label="Quizzes" sub={`${quizzes.length} sets`} />
         <ControlCard icon={Brain} label="Cards" sub={`${totalCards} total`} />
