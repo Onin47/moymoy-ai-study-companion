@@ -199,30 +199,46 @@ export function FocusTimer() {
   const isFocus = phase === "focus";
 
   return (
-    <div className="rounded-3xl glass-card p-5 shadow-ios-lg relative overflow-hidden">
+    <div
+      className={`rounded-3xl glass-card p-5 shadow-ios-lg relative overflow-hidden transition-shadow ${
+        isLocked ? "ring-2 ring-[rgba(151,125,223,0.55)] shadow-cta" : ""
+      }`}
+    >
       <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/15" />
       <div className="absolute -left-12 -bottom-14 w-36 h-36 rounded-full bg-white/10" />
 
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            {isFocus ? (
+            {isLocked ? (
+              <Lock className="h-4 w-4 text-ink" />
+            ) : isFocus ? (
               <Brain className="h-4 w-4 text-ink-soft" />
             ) : (
               <Coffee className="h-4 w-4 text-ink-soft" />
             )}
-            <p className="text-[10px] uppercase tracking-[0.2em] text-ink-soft font-semibold">
-              {isFocus ? "Focus" : "Break"} · {preset.label}
+            <p className="text-[10px] uppercase tracking-[0.2em] text-ink font-semibold">
+              {isLocked ? "Locked in" : isFocus ? "Focus" : "Break"} · {preset.label}
             </p>
           </div>
           <button
-            onClick={() => setShowSettings((s) => !s)}
-            className="h-8 w-8 rounded-xl glass grid place-items-center text-ink"
+            onClick={() => !isLocked && setShowSettings((s) => !s)}
+            disabled={isLocked}
+            className="h-8 w-8 rounded-xl glass grid place-items-center text-ink disabled:opacity-40"
             aria-label="Timer settings"
           >
             <Settings2 className="h-4 w-4" />
           </button>
         </div>
+
+        {isLocked && (
+          <div className="flex items-start gap-2 rounded-2xl bg-white/30 border border-white/40 p-2.5 mb-3">
+            <AlertTriangle className="h-4 w-4 text-ink shrink-0 mt-0.5" />
+            <p className="text-[11px] text-ink leading-snug">
+              Focus mode is on — navigation is blocked. Pause to take a quick break, or end early without XP.
+            </p>
+          </div>
+        )}
 
         {showSettings && (
           <div className="flex gap-2 mb-4">
