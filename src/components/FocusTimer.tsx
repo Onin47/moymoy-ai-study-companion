@@ -28,17 +28,110 @@ const daysBetween = (a: string, b: string) => {
   return Math.round(ms / 86_400_000);
 };
 
+type Persisted = {
+  presetIdx: number;
+  phase: Phase;
+  status: Status;
+  endsAt: number | null; // epoch ms when timer should hit 0 (running only)
+  secondsLeft: number;   // snapshot for paused state
+  completedFocus: number;
+  savedAt: number;       // epoch ms — used to detect "stale day" (next-day reset of count)
+};
+
+const STORAGE_KEY = "moymoy.focus-timer.v1";
+
+function loadPersisted(): Persisted | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as Persisted;
+  } catch {
+    return null;
+  }
+}
+
+function savePersisted(p: Persisted) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+  } catch {
+    /* ignore quota */
+  }
+}
+
+function clearPersisted() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function FocusTimer() {
   const { user } = useAuth();
 
-  const [presetIdx, setPresetIdx] = useState(0);
+  // Lazy initial state — rehydrate from localStorage so refresh keeps the lock
+  const initial = (() => {
+    const saved = loadPersisted();
+    if (!saved) {
+      return {
+        presetIdx: 0,
+        phase: "focus" as Phase,
+        status: "idle" as Status,
+        secondsLeft: PRESETS[0].focus * 60,
+        completedFocus: 0,
+      };
+    }
+    const p = PRESETS[saved.presetIdx] ?? PRESETS[0];
+    const sameDay =
+      new Date(saved.savedAt).toDateString() === new Date().toDateString();
+    const completedFocus = sameDay ? saved.completedFocus : 0;
+
+    if (saved.status === "running" && saved.endsAt) {
+      const remaining = Math.max(0, Math.round((saved.endsAt - Date.now()) / 1000));
+      return {
+        presetIdx: saved.presetIdx,
+        phase: saved.phase,
+        status: remaining > 0 ? ("running" as Status) : ("idle" as Status),
+        secondsLeft: remaining > 0
+          ? remaining
+          : (saved.phase === "focus" ? p.focus : p.brk) * 60,
+        completedFocus,
+      };
+    }
+    if (saved.status === "paused") {
+      return {
+        presetIdx: saved.presetIdx,
+        phase: saved.phase,
+        status: "paused" as Status,
+        secondsLeft: saved.secondsLeft,
+        completedFocus,
+      };
+    }
+    return {
+      presetIdx: saved.presetIdx,
+      phase: saved.phase,
+      status: "idle" as Status,
+      secondsLeft: (saved.phase === "focus" ? p.focus : p.brk) * 60,
+      completedFocus,
+    };
+  })();
+
+  const [presetIdx, setPresetIdx] = useState(initial.presetIdx);
   const preset = PRESETS[presetIdx];
 
-  const [phase, setPhase] = useState<Phase>("focus");
-  const [status, setStatus] = useState<Status>("idle");
-  const [secondsLeft, setSecondsLeft] = useState(preset.focus * 60);
-  const [completedFocus, setCompletedFocus] = useState(0);
+  const [phase, setPhase] = useState<Phase>(initial.phase);
+  const [status, setStatus] = useState<Status>(initial.status);
+  const [secondsLeft, setSecondsLeft] = useState(initial.secondsLeft);
+  const [completedFocus, setCompletedFocus] = useState(initial.completedFocus);
   const [showSettings, setShowSettings] = useState(false);
+
+  // endsAt drives running countdown, so refresh / tab-close keeps wall-clock accurate
+  const endsAtRef = useRef<number | null>(
+    initial.status === "running" ? Date.now() + initial.secondsLeft * 1000 : null,
+  );
 
   // Reset countdown when preset/phase changes while idle
   useEffect(() => {
@@ -47,21 +140,48 @@ export function FocusTimer() {
     }
   }, [presetIdx, phase, preset.focus, preset.brk, status]);
 
-  // Tick
+  // Tick — derive from endsAt while running so it stays accurate across refresh
   const tickRef = useRef<number | null>(null);
   useEffect(() => {
     if (status !== "running") return;
-    tickRef.current = window.setInterval(() => {
-      setSecondsLeft((s) => Math.max(0, s - 1));
-    }, 1000);
+    if (!endsAtRef.current) {
+      endsAtRef.current = Date.now() + secondsLeft * 1000;
+    }
+    const tick = () => {
+      const remaining = Math.max(
+        0,
+        Math.round(((endsAtRef.current ?? Date.now()) - Date.now()) / 1000),
+      );
+      setSecondsLeft(remaining);
+    };
+    tick();
+    tickRef.current = window.setInterval(tick, 1000);
     return () => {
       if (tickRef.current) window.clearInterval(tickRef.current);
     };
-  }, [status]);
+  }, [status]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Persist on every meaningful change
+  useEffect(() => {
+    if (status === "idle" && phase === "focus" && completedFocus === 0) {
+      clearPersisted();
+      return;
+    }
+    savePersisted({
+      presetIdx,
+      phase,
+      status,
+      endsAt: status === "running" ? endsAtRef.current : null,
+      secondsLeft,
+      completedFocus,
+      savedAt: Date.now(),
+    });
+  }, [presetIdx, phase, status, secondsLeft, completedFocus]);
 
   // Phase transitions
   useEffect(() => {
     if (secondsLeft > 0 || status === "idle") return;
+    endsAtRef.current = null;
     if (phase === "focus") {
       void completeFocusSession(preset.focus);
       setCompletedFocus((c) => c + 1);
