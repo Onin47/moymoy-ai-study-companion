@@ -16,12 +16,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
 
   return (
-    <div className="relative min-h-screen bg-background">
+    <div className="relative min-h-screen">
       <main className="pb-28 safe-top">{children}</main>
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 safe-bottom">
         <div className="mx-auto max-w-md px-3 pb-2">
-          <div className="glass rounded-3xl shadow-ios-lg border border-white/40 px-2 py-2 flex justify-between">
+          <div className="glass-strong rounded-3xl shadow-ios-lg px-2 py-2 flex justify-between">
             {tabs.map((t) => {
               const active = t.exact
                 ? pathname === t.to
