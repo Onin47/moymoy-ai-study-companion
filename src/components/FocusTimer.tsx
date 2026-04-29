@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Play, Pause, RotateCcw, Coffee, Brain, Settings2, Lock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { setSwipeLock } from "@/lib/swipe-lock";
 
 type Phase = "focus" | "break";
 type Status = "idle" | "running" | "paused";
