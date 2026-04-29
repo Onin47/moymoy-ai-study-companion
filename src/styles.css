@@ -374,3 +374,53 @@
 }
 .animate-pulse-ring { animation: moy-pulse-ring 1.8s ease-out infinite; }
 
+
+/* ===== iOS-style swipe page transitions ===== */
+@keyframes moy-page-in-right {
+  0% { opacity: 0; transform: translate3d(40px, 0, 0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes moy-page-in-left {
+  0% { opacity: 0; transform: translate3d(-40px, 0, 0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.animate-page-in-right { animation: moy-page-in-right 380ms cubic-bezier(0.22, 1, 0.36, 1); will-change: transform, opacity; }
+.animate-page-in-left  { animation: moy-page-in-left  380ms cubic-bezier(0.22, 1, 0.36, 1); will-change: transform, opacity; }
+
+/* Swipe drag layer — follows finger with no transition while dragging,
+   snap-back uses a smooth spring on release */
+.swipe-layer { will-change: transform, opacity; touch-action: pan-y; }
+.swipe-layer.snap { transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 360ms ease; }
+
+/* Indicator "haptic" pulse — quick squish + glow flash */
+@keyframes moy-haptic-pulse {
+  0%   { transform: scaleX(1) scaleY(1); box-shadow: 0 6px 22px rgba(151,125,223,0.35), inset 0 0 0 1px rgba(255,255,255,0.6); }
+  35%  { transform: scaleX(1.08) scaleY(0.85); box-shadow: 0 10px 30px rgba(151,125,223,0.7), inset 0 0 0 1px rgba(255,255,255,0.85); }
+  70%  { transform: scaleX(0.96) scaleY(1.06); }
+  100% { transform: scaleX(1) scaleY(1); box-shadow: 0 6px 22px rgba(151,125,223,0.35), inset 0 0 0 1px rgba(255,255,255,0.6); }
+}
+.tab-indicator.haptic { animation: moy-haptic-pulse 320ms ease-out; }
+
+/* Subtle directional hint — the "next page" peeking in from the side while dragging */
+.swipe-peek {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+}
+.swipe-peek .chev {
+  height: 56px; width: 56px;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: grid; place-items: center;
+  color: var(--moy-ink);
+  box-shadow: 0 10px 30px rgba(151,125,223,0.3), inset 0 0 0 1px rgba(255,255,255,0.6);
+  transform: scale(0.6);
+  opacity: 0;
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+.swipe-peek.show .chev { transform: scale(1); opacity: 1; }
