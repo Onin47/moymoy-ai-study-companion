@@ -457,115 +457,159 @@ export function FocusTimer() {
 
   return (
     <div
-      className={`rounded-3xl glass-card p-5 shadow-ios-lg relative overflow-hidden transition-shadow ${
-        isLocked ? "ring-2 ring-[rgba(151,125,223,0.55)] shadow-cta" : ""
-      }`}
+      className="tilt-scene relative"
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
     >
-      <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/15" />
-      <div className="absolute -left-12 -bottom-14 w-36 h-36 rounded-full bg-white/10" />
+      <div
+        ref={cardRef}
+        className={`tilt-card rounded-3xl glass-card p-5 shadow-ios-lg relative overflow-hidden transition-shadow ${
+          isLocked ? "ring-2 ring-[rgba(151,125,223,0.55)] shadow-cta" : ""
+        }`}
+      >
+        <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/15" />
+        <div className="absolute -left-12 -bottom-14 w-36 h-36 rounded-full bg-white/10" />
 
-      <div className="relative">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            {isLocked ? (
-              <Lock className="h-4 w-4 text-ink" />
-            ) : isFocus ? (
-              <Brain className="h-4 w-4 text-ink-soft" />
-            ) : (
-              <Coffee className="h-4 w-4 text-ink-soft" />
-            )}
-            <p className="text-[10px] uppercase tracking-[0.2em] text-ink font-semibold">
-              {isLocked ? "Locked in" : isFocus ? "Focus" : "Break"} · {preset.label}
-            </p>
-          </div>
-          <button
-            onClick={() => !isLocked && setShowSettings((s) => !s)}
-            disabled={isLocked}
-            className="h-8 w-8 rounded-xl glass grid place-items-center text-ink disabled:opacity-40"
-            aria-label="Timer settings"
-          >
-            <Settings2 className="h-4 w-4" />
-          </button>
-        </div>
-
-        {isLocked && (
-          <div className="flex items-start gap-2 rounded-2xl bg-white/30 border border-white/40 p-2.5 mb-3">
-            <AlertTriangle className="h-4 w-4 text-ink shrink-0 mt-0.5" />
-            <p className="text-[11px] text-ink leading-snug">
-              Focus mode is on — navigation is blocked. Pause to take a quick break, or end early without XP.
-            </p>
-          </div>
-        )}
-
-        {showSettings && (
-          <div className="flex gap-2 mb-4">
-            {PRESETS.map((p, i) => (
-              <button
-                key={p.label}
-                onClick={() => {
-                  setPresetIdx(i);
-                  setStatus("idle");
-                  setPhase("focus");
-                }}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition ${
-                  i === presetIdx ? "btn-primary-cta" : "glass text-ink"
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Ring */}
-        <div className="relative mx-auto w-[200px] h-[200px] grid place-items-center mb-4">
-          <svg width="200" height="200" className="-rotate-90">
-            <circle
-              cx="100"
-              cy="100"
-              r={R}
-              stroke="rgba(255,255,255,0.35)"
-              strokeWidth="10"
-              fill="none"
-            />
-            <circle
-              cx="100"
-              cy="100"
-              r={R}
-              stroke="url(#moy-ring)"
-              strokeWidth="10"
-              strokeLinecap="round"
-              fill="none"
-              strokeDasharray={C}
-              strokeDashoffset={C * (1 - progress)}
-              style={{ transition: "stroke-dashoffset 1s linear" }}
-            />
-            <defs>
-              <linearGradient id="moy-ring" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#F2E6EE" />
-                <stop offset="100%" stopColor="#977DDF" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <div className="absolute inset-0 grid place-items-center">
-            <div className="text-center">
-              <p className="text-4xl font-bold text-ink tabular-nums leading-none">
-                {fmt(secondsLeft)}
-              </p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-ink-soft mt-2 font-semibold">
-                {status === "running"
-                  ? isFocus
-                    ? "Stay with it"
-                    : "Breathe"
-                  : status === "paused"
-                  ? "Paused"
-                  : isFocus
-                  ? "Ready"
-                  : "Break time"}
+        <div className="relative">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              {isLocked ? (
+                <Lock className="h-4 w-4 text-ink" />
+              ) : isFocus ? (
+                <Brain className="h-4 w-4 text-ink-soft" />
+              ) : (
+                <Coffee className="h-4 w-4 text-ink-soft" />
+              )}
+              <p className="text-[10px] uppercase tracking-[0.2em] text-ink font-semibold">
+                {isLocked ? "Locked in" : isFocus ? "Focus" : "Break"} · {preset.label}
               </p>
             </div>
+            <button
+              onClick={() => !isLocked && setShowSettings((s) => !s)}
+              disabled={isLocked}
+              className="h-8 w-8 rounded-xl glass grid place-items-center text-ink disabled:opacity-40"
+              aria-label="Timer settings"
+            >
+              <Settings2 className="h-4 w-4" />
+            </button>
           </div>
-        </div>
+
+          {isLocked && (
+            <div className="flex items-start gap-2 rounded-2xl bg-white/30 border border-white/40 p-2.5 mb-3 animate-pop-in">
+              <AlertTriangle className="h-4 w-4 text-ink shrink-0 mt-0.5" />
+              <p className="text-[11px] text-ink leading-snug">
+                Focus mode is on — navigation is blocked. Pause to take a quick break, or end early without XP.
+              </p>
+            </div>
+          )}
+
+          {showSettings && (
+            <div className="flex gap-2 mb-4 animate-pop-in">
+              {PRESETS.map((p, i) => (
+                <button
+                  key={p.label}
+                  onClick={() => {
+                    setPresetIdx(i);
+                    setStatus("idle");
+                    setPhase("focus");
+                  }}
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition ${
+                    i === presetIdx ? "btn-primary-cta" : "glass text-ink"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Ring + 3D layered halo */}
+          <div className="tilt-pop relative mx-auto w-[220px] h-[220px] grid place-items-center mb-4">
+            {/* breathing aura */}
+            <div className="absolute inset-0 rounded-full animate-aura pointer-events-none" />
+
+            {/* slow conic shimmer (only when running) */}
+            {status === "running" && (
+              <div
+                className="absolute inset-2 rounded-full animate-shimmer pointer-events-none opacity-60"
+                style={{
+                  background:
+                    "conic-gradient(from 0deg, rgba(255,255,255,0) 0deg, rgba(255,255,255,0.6) 60deg, rgba(255,255,255,0) 120deg)",
+                  WebkitMaskImage:
+                    "radial-gradient(circle, transparent 60%, black 62%, black 78%, transparent 80%)",
+                  maskImage:
+                    "radial-gradient(circle, transparent 60%, black 62%, black 78%, transparent 80%)",
+                }}
+              />
+            )}
+
+            <svg width="200" height="200" className="-rotate-90 relative">
+              <circle
+                cx="100"
+                cy="100"
+                r={R}
+                stroke="rgba(255,255,255,0.35)"
+                strokeWidth="10"
+                fill="none"
+              />
+              <circle
+                cx="100"
+                cy="100"
+                r={R}
+                stroke="url(#moy-ring)"
+                strokeWidth="10"
+                strokeLinecap="round"
+                fill="none"
+                strokeDasharray={C}
+                strokeDashoffset={C * (1 - progress)}
+                style={{ transition: "stroke-dashoffset 1s linear" }}
+              />
+              <defs>
+                <linearGradient id="moy-ring" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#F2E6EE" />
+                  <stop offset="100%" stopColor="#977DDF" />
+                </linearGradient>
+              </defs>
+            </svg>
+
+            {/* orbiting dot — leads the progress */}
+            {status === "running" && (
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  transform: `rotate(${progress * 360 - 90}deg)`,
+                  transition: "transform 1s linear",
+                }}
+              >
+                <div
+                  className="absolute left-1/2 top-1/2 h-3 w-3 -mt-[100px] -ml-1.5 rounded-full bg-white shadow-[0_0_18px_rgba(151,125,223,0.9)]"
+                />
+              </div>
+            )}
+
+            <div className="absolute inset-0 grid place-items-center">
+              <div className="text-center">
+                <p
+                  key={Math.floor(secondsLeft / 60)}
+                  className="text-4xl font-bold text-ink tabular-nums leading-none animate-pop-in"
+                >
+                  {fmt(secondsLeft)}
+                </p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-ink-soft mt-2 font-semibold">
+                  {status === "running"
+                    ? isFocus
+                      ? "Stay with it"
+                      : "Breathe"
+                    : status === "paused"
+                    ? "Paused"
+                    : isFocus
+                    ? "Ready"
+                    : "Break time"}
+                </p>
+              </div>
+            </div>
+          </div>
+
 
         {/* Controls */}
         <div className="flex items-center gap-2">
