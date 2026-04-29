@@ -660,10 +660,27 @@ export function FocusTimer() {
           )}
         </div>
 
-        <div className="flex items-center justify-between mt-4 text-[11px] text-ink-soft">
-          <span>Sessions today: <span className="font-bold text-ink">{completedFocus}</span></span>
-          <span>+{XP_PER_FOCUS} XP per focus</span>
+          <div className="flex items-center justify-between mt-4 text-[11px] text-ink-soft">
+            <span>Sessions today: <span className="font-bold text-ink">{completedFocus}</span></span>
+            <span>+{XP_PER_FOCUS} XP per focus</span>
+          </div>
         </div>
+
+        {/* Away overlay — slides over the card when the user switches tabs while locked */}
+        {isAway && (
+          <div className="absolute inset-0 rounded-3xl overflow-hidden grid place-items-center animate-away-in z-20"
+               style={{ background: "linear-gradient(160deg, rgba(45,27,78,0.55), rgba(151,125,223,0.55))" }}>
+            <div className="absolute inset-0 grid place-items-center pointer-events-none">
+              <span className="absolute h-24 w-24 rounded-full border-2 border-white/40 animate-pulse-ring" />
+              <span className="absolute h-24 w-24 rounded-full border-2 border-white/30 animate-pulse-ring" style={{ animationDelay: "0.6s" }} />
+            </div>
+            <div className="relative text-center px-6">
+              <div className="mx-auto mb-3 text-4xl animate-eye-blink">👀</div>
+              <p className="text-white font-bold text-lg leading-tight">Eyes back here</p>
+              <p className="text-white/80 text-xs mt-1">Stay with the session — MoyMoy's watching 💜</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
