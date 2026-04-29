@@ -287,3 +287,90 @@
   50% { transform: scale(1.08) rotate(2deg); }
 }
 .animate-flame { animation: flame-flicker 1.6s ease-in-out infinite; }
+
+/* ===== Living motion system ===== */
+
+/* Smooth route transition */
+@keyframes moy-route-in {
+  0% { opacity: 0; transform: translateY(14px) scale(0.985); filter: blur(6px); }
+  60% { filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.animate-route-in {
+  animation: moy-route-in 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity, filter;
+}
+
+/* 3D tilt scene + card */
+.tilt-scene { perspective: 1000px; }
+.tilt-card {
+  transform-style: preserve-3d;
+  transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.tilt-card > * { transform: translateZ(0); }
+.tilt-pop { transform: translateZ(40px); }
+.tilt-pop-soft { transform: translateZ(20px); }
+
+/* Slow 3D float — subtle "alive" feel */
+@keyframes moy-float-3d {
+  0%, 100% { transform: rotateX(0deg) rotateY(0deg) translateZ(0); }
+  50% { transform: rotateX(2deg) rotateY(-3deg) translateZ(6px); }
+}
+.animate-float-3d { animation: moy-float-3d 9s ease-in-out infinite; }
+
+/* Breathing aura behind the timer ring */
+@keyframes moy-aura {
+  0%, 100% { transform: scale(0.92); opacity: 0.55; }
+  50% { transform: scale(1.08); opacity: 0.95; }
+}
+.animate-aura {
+  animation: moy-aura 4.5s ease-in-out infinite;
+  background: radial-gradient(circle at 50% 50%, rgba(151, 125, 223, 0.55), rgba(242, 230, 238, 0) 70%);
+  filter: blur(18px);
+}
+
+/* Soft slow rotation for the orbit ring */
+@keyframes moy-orbit {
+  to { transform: rotate(360deg); }
+}
+.animate-orbit { animation: moy-orbit 18s linear infinite; }
+
+/* Conic shimmer sweep around the ring */
+@keyframes moy-shimmer {
+  to { transform: rotate(1turn); }
+}
+.animate-shimmer { animation: moy-shimmer 6s linear infinite; }
+
+/* Tab pill underline indicator */
+.tab-indicator {
+  position: absolute;
+  top: 4px;
+  height: calc(100% - 8px);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(229,218,246,0.85));
+  box-shadow: 0 6px 22px rgba(151,125,223,0.35), inset 0 0 0 1px rgba(255,255,255,0.6);
+  transition: left 480ms cubic-bezier(0.22, 1, 0.36, 1), width 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 0;
+}
+
+/* Away overlay */
+@keyframes moy-away-in {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(14px); }
+}
+.animate-away-in { animation: moy-away-in 420ms ease-out forwards; }
+
+@keyframes moy-eye-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+.animate-eye-blink { animation: moy-eye-blink 4s ease-in-out infinite; transform-origin: center; }
+
+@keyframes moy-pulse-ring {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.animate-pulse-ring { animation: moy-pulse-ring 1.8s ease-out infinite; }
+
