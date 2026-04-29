@@ -402,22 +402,52 @@ export function FocusTimer() {
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [isLocked]);
 
-  // Nudge if the user switches tabs / minimizes
+  // Nudge if the user switches tabs / minimizes — and trigger a smooth overlay
   const awayCountRef = useRef(0);
+  const [isAway, setIsAway] = useState(false);
   useEffect(() => {
-    if (!isLocked) return;
+    if (!isLocked) {
+      setIsAway(false);
+      return;
+    }
     const onVis = () => {
       if (document.visibilityState === "hidden") {
         awayCountRef.current += 1;
+        setIsAway(true);
       } else if (awayCountRef.current > 0) {
+        // Keep the overlay for a beat so the return feels intentional
         toast.warning("Eyes back here 👀", {
           description: "MoyMoy noticed you stepped away. Stay with the session!",
         });
+        window.setTimeout(() => setIsAway(false), 700);
+      } else {
+        setIsAway(false);
       }
     };
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
   }, [isLocked]);
+
+  // Pointer-driven 3D tilt for the timer card
+  const cardRef = useRef<HTMLDivElement>(null);
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const el = cardRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width;
+    const py = (e.clientY - r.top) / r.height;
+    const ry = (px - 0.5) * 12; // rotateY
+    const rx = (0.5 - py) * 10; // rotateX
+    el.style.setProperty("--tilt-x", `${rx}deg`);
+    el.style.setProperty("--tilt-y", `${ry}deg`);
+  };
+  const onPointerLeave = () => {
+    const el = cardRef.current;
+    if (!el) return;
+    el.style.setProperty("--tilt-x", `0deg`);
+    el.style.setProperty("--tilt-y", `0deg`);
+  };
+
 
   // SVG ring
   const R = 78;
