@@ -39,6 +39,39 @@ type Persisted = {
 };
 
 const STORAGE_KEY = "moymoy.focus-timer.v1";
+const QUEUE_KEY = "moymoy.focus-timer.queue.v1";
+
+type QueuedSession = {
+  id: string;            // local idempotency key
+  user_id: string;
+  duration_seconds: number;
+  xp_earned: number;
+  session_date: string;  // YYYY-MM-DD
+  completed_at: number;  // epoch ms — used for streak math
+};
+
+function loadQueue(): QueuedSession[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(QUEUE_KEY);
+    return raw ? (JSON.parse(raw) as QueuedSession[]) : [];
+  } catch {
+    return [];
+  }
+}
+function saveQueue(q: QueuedSession[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
+  } catch {
+    /* ignore quota */
+  }
+}
+function enqueueSession(s: QueuedSession) {
+  const q = loadQueue();
+  q.push(s);
+  saveQueue(q);
+}
 
 function loadPersisted(): Persisted | null {
   if (typeof window === "undefined") return null;
