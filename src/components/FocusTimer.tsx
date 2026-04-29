@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Play, Pause, RotateCcw, Coffee, Brain, Settings2, Lock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { setSwipeLock } from "@/lib/swipe-lock";
 
 type Phase = "focus" | "break";
 type Status = "idle" | "running" | "paused";
@@ -390,6 +391,13 @@ export function FocusTimer() {
       );
     },
   });
+
+  // Sync the global swipe-lock so AppShell disables swipe nav while focused
+  useEffect(() => {
+    setSwipeLock(isLocked);
+  }, [isLocked]);
+  useEffect(() => () => setSwipeLock(false), []);
+
 
   // Block tab close / refresh / external nav
   useEffect(() => {
