@@ -391,6 +391,12 @@ export function FocusTimer() {
     },
   });
 
+  // Sync the global swipe-lock so AppShell disables swipe nav while focused
+  useEffect(() => {
+    setSwipeLock(isLocked);
+    return () => setSwipeLock(false);
+  }, [isLocked]);
+
   // Block tab close / refresh / external nav
   useEffect(() => {
     if (!isLocked) return;
