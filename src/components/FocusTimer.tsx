@@ -238,44 +238,105 @@ export function FocusTimer() {
     const duration = focusMinutes * 60;
     const today = todayISO();
 
-    // Log session
-    await supabase.from("study_sessions").insert({
+    const queued: QueuedSession = {
+      id:
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       user_id: user.id,
-      type: "focus",
       duration_seconds: duration,
       xp_earned: XP_PER_FOCUS,
       session_date: today,
-    });
+      completed_at: Date.now(),
+    };
 
-    // Update streak + XP
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("current_streak,longest_streak,total_xp,last_study_date")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (!profile) return;
-
-    let nextStreak = profile.current_streak ?? 0;
-    if (profile.last_study_date !== today) {
-      const gap = profile.last_study_date
-        ? daysBetween(profile.last_study_date, today)
-        : null;
-      nextStreak = gap === 1 ? nextStreak + 1 : 1;
-    }
-    const nextLongest = Math.max(profile.longest_streak ?? 0, nextStreak);
-    const nextXp = (profile.total_xp ?? 0) + XP_PER_FOCUS;
-
-    await supabase
-      .from("profiles")
-      .update({
-        total_xp: nextXp,
-        current_streak: nextStreak,
-        longest_streak: nextLongest,
-        last_study_date: today,
-      })
-      .eq("id", user.id);
+    // Queue first — guarantees no loss if the request fails or we're offline
+    enqueueSession(queued);
+    void flushQueue();
   };
+
+  const flushingRef = useRef(false);
+  const flushQueue = async () => {
+    if (flushingRef.current) return;
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return;
+    if (!user) return;
+
+    flushingRef.current = true;
+    try {
+      let queue = loadQueue().filter((s) => s.user_id === user.id);
+      if (queue.length === 0) return;
+
+      // Sort oldest-first so streak math walks days in order
+      queue.sort((a, b) => a.completed_at - b.completed_at);
+
+      for (const session of queue) {
+        const { error: insertErr } = await supabase
+          .from("study_sessions")
+          .insert({
+            user_id: session.user_id,
+            type: "focus",
+            duration_seconds: session.duration_seconds,
+            xp_earned: session.xp_earned,
+            session_date: session.session_date,
+          });
+        if (insertErr) throw insertErr;
+
+        const { data: profile, error: profErr } = await supabase
+          .from("profiles")
+          .select("current_streak,longest_streak,total_xp,last_study_date")
+          .eq("id", session.user_id)
+          .maybeSingle();
+        if (profErr) throw profErr;
+        if (!profile) continue;
+
+        let nextStreak = profile.current_streak ?? 0;
+        if (profile.last_study_date !== session.session_date) {
+          const gap = profile.last_study_date
+            ? daysBetween(profile.last_study_date, session.session_date)
+            : null;
+          nextStreak = gap === 1 ? nextStreak + 1 : 1;
+        }
+        const nextLongest = Math.max(profile.longest_streak ?? 0, nextStreak);
+        const nextXp = (profile.total_xp ?? 0) + session.xp_earned;
+
+        const { error: updErr } = await supabase
+          .from("profiles")
+          .update({
+            total_xp: nextXp,
+            current_streak: nextStreak,
+            longest_streak: nextLongest,
+            last_study_date: session.session_date,
+          })
+          .eq("id", session.user_id);
+        if (updErr) throw updErr;
+
+        // Remove just-synced item from the persisted queue
+        const remaining = loadQueue().filter((s) => s.id !== session.id);
+        saveQueue(remaining);
+      }
+    } catch {
+      // Leave remaining items queued; will retry on next online / mount
+    } finally {
+      flushingRef.current = false;
+    }
+  };
+
+  // Try to flush whenever the user is set or the network comes back
+  useEffect(() => {
+    if (!user) return;
+    void flushQueue();
+    const onOnline = () => {
+      void flushQueue();
+      const pending = loadQueue().filter((s) => s.user_id === user.id).length;
+      if (pending > 0) {
+        toast("Back online — syncing your focus sessions ✨");
+      }
+    };
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
 
   const totalSeconds = (phase === "focus" ? preset.focus : preset.brk) * 60;
   const progress = useMemo(
