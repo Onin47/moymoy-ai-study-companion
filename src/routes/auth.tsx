@@ -68,12 +68,12 @@ function AuthPage() {
   };
 
   return (
-    <div className="landing-stage relative min-h-screen overflow-hidden flex flex-col">
-      {/* Atmospheric background */}
-      <div className="landing-bg" aria-hidden />
-      <div className="landing-grain" aria-hidden />
+    <div className="landing-stage relative min-h-screen flex flex-col">
+      {/* Atmospheric background — fixed to viewport so it never overlaps scrolled content */}
+      <div className="landing-bg landing-fixed" aria-hidden />
+      <div className="landing-grain landing-fixed" aria-hidden />
       {/* Particle dots */}
-      <div className="landing-particles" aria-hidden>
+      <div className="landing-particles landing-fixed" aria-hidden>
         {Array.from({ length: 18 }).map((_, i) => (
           <span key={i} className={`particle p-${i}`} />
         ))}
