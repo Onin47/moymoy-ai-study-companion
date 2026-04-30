@@ -652,3 +652,52 @@ body:has(.landing-stage)::before { opacity: 0.06; mix-blend-mode: screen; }
   font-size: 10.5px; color: rgba(255,255,255,0.55);
   align-self: flex-end;
 }
+
+/* ===== Landing scroll fixes ===== */
+
+/* Background layers anchored to the viewport so they never collide with scrolled content */
+.landing-fixed {
+  position: fixed !important;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Let the body handle scrolling — the stage shouldn't be its own scroll container
+   (that broke iOS momentum scroll and caused fixed children to behave oddly). */
+.landing-stage { overflow: visible; }
+
+/* Clip the floating icon scene so its absolutely-positioned icons can't bleed
+   over the preview card below it during scroll */
+.scene-frame {
+  position: relative;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  /* fade out icons near the bottom edge so the transition into the preview is clean */
+  -webkit-mask-image: linear-gradient(180deg, #000 78%, transparent 100%);
+          mask-image: linear-gradient(180deg, #000 78%, transparent 100%);
+}
+
+/* Tighter, predictable scene size — taller on big phones, shorter on small ones */
+.floating-scene-compact {
+  width: min(320px, 82vw);
+  height: clamp(200px, 32vh, 260px);
+}
+
+/* Preview card: keep the flashcard readable while scrolling past the icon scene.
+   Stronger background + saturated blur prevents the colorful particles/glow
+   from washing out the text underneath. */
+.preview-surface {
+  background: rgba(14, 8, 24, 0.72);
+  -webkit-backdrop-filter: saturate(160%) blur(22px);
+          backdrop-filter: saturate(160%) blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+/* Same treatment for the inner note + plan blocks so they stay legible */
+.preview-block {
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
