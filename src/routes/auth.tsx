@@ -101,7 +101,7 @@ function AuthPage() {
 
 function WelcomeView({ onStart }: { onStart: () => void }) {
   return (
-    <div className="relative z-10 flex-1 flex flex-col px-6 pt-10 pb-8 max-w-md mx-auto w-full">
+    <div className="relative z-10 flex flex-col px-6 pt-10 pb-8 max-w-md mx-auto w-full">
       {/* Brand mark */}
       <div className="flex items-center gap-2 fade-up fade-up-1">
         <div className="grid h-9 w-9 place-items-center rounded-2xl bg-white/10 border border-white/15 backdrop-blur">
@@ -111,8 +111,8 @@ function WelcomeView({ onStart }: { onStart: () => void }) {
       </div>
 
       {/* 3D floating icon scene */}
-      <div className="relative flex-1 grid place-items-center my-6">
-        <div className="floating-scene">
+      <div className="relative grid place-items-center my-4">
+        <div className="floating-scene floating-scene-compact">
           {/* Soft glow */}
           <div className="scene-glow" aria-hidden />
 
@@ -144,15 +144,18 @@ function WelcomeView({ onStart }: { onStart: () => void }) {
       </div>
 
       {/* Copy */}
-      <div className="text-center fade-up fade-up-3">
-        <h1 className="text-[40px] leading-[1.05] font-bold tracking-tight text-white">
+      <div className="text-center fade-up fade-up-2">
+        <h1 className="text-[36px] leading-[1.05] font-bold tracking-tight text-white">
           Study smarter,<br />
           <span className="landing-gradient-text">feel lighter.</span>
         </h1>
-        <p className="mt-4 text-[15px] text-white/65 max-w-xs mx-auto">
+        <p className="mt-3 text-[14px] text-white/65 max-w-xs mx-auto">
           Your AI companion for notes, flashcards, and focused study sessions.
         </p>
       </div>
+
+      {/* Interactive AI preview */}
+      <LandingPreview />
 
       {/* CTAs */}
       <div className="mt-7 space-y-3 fade-up fade-up-4">
