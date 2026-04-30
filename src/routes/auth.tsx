@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Sparkles, Mail, Lock, User as UserIcon, Brain, BookOpen, MessageCircle, Flame, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { LandingPreview } from "@/components/LandingPreview";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
