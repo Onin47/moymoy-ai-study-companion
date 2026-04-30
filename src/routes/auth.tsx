@@ -111,7 +111,7 @@ function WelcomeView({ onStart }: { onStart: () => void }) {
       </div>
 
       {/* 3D floating icon scene */}
-      <div className="relative grid place-items-center my-4">
+      <div className="scene-frame my-4">
         <div className="floating-scene floating-scene-compact">
           {/* Soft glow */}
           <div className="scene-glow" aria-hidden />
