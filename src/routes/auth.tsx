@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Sparkles, Mail, Lock, User as UserIcon } from "lucide-react";
+import { Sparkles, Mail, Lock, User as UserIcon, Brain, BookOpen, MessageCircle, Flame, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -12,7 +12,8 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [view, setView] = useState<"welcome" | "form">("welcome");
+  const [mode, setMode] = useState<"signin" | "signup">("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -66,102 +67,245 @@ function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-brand-soft flex flex-col">
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-10">
-        <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-3xl bg-brand-gradient shadow-ios-lg animate-pop-in">
-          <Sparkles className="h-10 w-10 text-white" strokeWidth={2.5} />
+    <div className="landing-stage relative min-h-screen overflow-hidden flex flex-col">
+      {/* Atmospheric background */}
+      <div className="landing-bg" aria-hidden />
+      <div className="landing-grain" aria-hidden />
+      {/* Particle dots */}
+      <div className="landing-particles" aria-hidden>
+        {Array.from({ length: 18 }).map((_, i) => (
+          <span key={i} className={`particle p-${i}`} />
+        ))}
+      </div>
+
+      {view === "welcome" ? <WelcomeView onStart={() => setView("form")} /> : (
+        <FormView
+          mode={mode}
+          setMode={setMode}
+          name={name}
+          setName={setName}
+          email={email}
+          setEmail={setEmail}
+          password={password}
+          setPassword={setPassword}
+          busy={busy}
+          onSubmit={onSubmit}
+          onGoogle={onGoogle}
+          onBack={() => setView("welcome")}
+        />
+      )}
+    </div>
+  );
+}
+
+function WelcomeView({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="relative z-10 flex-1 flex flex-col px-6 pt-10 pb-8 max-w-md mx-auto w-full">
+      {/* Brand mark */}
+      <div className="flex items-center gap-2 fade-up fade-up-1">
+        <div className="grid h-9 w-9 place-items-center rounded-2xl bg-white/10 border border-white/15 backdrop-blur">
+          <Sparkles className="h-4 w-4 text-white" strokeWidth={2.5} />
         </div>
-        <h1 className="text-4xl font-bold tracking-tight text-brand-gradient">MoyMoy</h1>
-        <p className="mt-2 text-sm text-muted-foreground text-center">
-          Your AI study companion ✨
+        <span className="text-white/90 font-semibold tracking-tight">MoyMoy</span>
+      </div>
+
+      {/* 3D floating icon scene */}
+      <div className="relative flex-1 grid place-items-center my-6">
+        <div className="floating-scene">
+          {/* Soft glow */}
+          <div className="scene-glow" aria-hidden />
+
+          {/* Tiny orbit dots */}
+          <span className="orbit-dot od-1" />
+          <span className="orbit-dot od-2" />
+          <span className="orbit-dot od-3" />
+          <span className="orbit-dot od-4" />
+          <span className="orbit-dash od-d1" />
+          <span className="orbit-dash od-d2" />
+          <span className="orbit-dash od-d3" />
+
+          <FloatIcon className="fi fi-1" delay="0s">
+            <Brain className="h-7 w-7 text-white" strokeWidth={1.8} />
+          </FloatIcon>
+          <FloatIcon className="fi fi-2" delay="-2s" big>
+            <Sparkles className="h-9 w-9 text-white" strokeWidth={1.8} />
+          </FloatIcon>
+          <FloatIcon className="fi fi-3" delay="-4s">
+            <BookOpen className="h-7 w-7 text-white" strokeWidth={1.8} />
+          </FloatIcon>
+          <FloatIcon className="fi fi-4" delay="-1s">
+            <MessageCircle className="h-6 w-6 text-white" strokeWidth={1.8} />
+          </FloatIcon>
+          <FloatIcon className="fi fi-5" delay="-3s">
+            <Flame className="h-6 w-6 text-white" strokeWidth={1.8} />
+          </FloatIcon>
+        </div>
+      </div>
+
+      {/* Copy */}
+      <div className="text-center fade-up fade-up-3">
+        <h1 className="text-[40px] leading-[1.05] font-bold tracking-tight text-white">
+          Study smarter,<br />
+          <span className="landing-gradient-text">feel lighter.</span>
+        </h1>
+        <p className="mt-4 text-[15px] text-white/65 max-w-xs mx-auto">
+          Your AI companion for notes, flashcards, and focused study sessions.
         </p>
+      </div>
 
-        <div className="mt-8 w-full max-w-sm rounded-3xl bg-card shadow-ios p-6">
-          <div className="flex rounded-2xl bg-muted p-1 mb-5">
-            <button
-              type="button"
-              onClick={() => setMode("signin")}
-              className={`flex-1 py-2 rounded-xl text-sm font-semibold transition ${mode === "signin" ? "bg-card shadow-ios-sm text-foreground" : "text-muted-foreground"}`}
-            >
-              Sign in
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("signup")}
-              className={`flex-1 py-2 rounded-xl text-sm font-semibold transition ${mode === "signup" ? "bg-card shadow-ios-sm text-foreground" : "text-muted-foreground"}`}
-            >
-              Create account
-            </button>
-          </div>
-
-          <form onSubmit={onSubmit} className="space-y-3">
-            {mode === "signup" && (
-              <Field icon={<UserIcon className="h-4 w-4" />}>
-                <input
-                  type="text"
-                  required
-                  placeholder="Your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-transparent outline-none text-sm placeholder:text-muted-foreground"
-                />
-              </Field>
-            )}
-            <Field icon={<Mail className="h-4 w-4" />}>
-              <input
-                type="email"
-                required
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-transparent outline-none text-sm placeholder:text-muted-foreground"
-              />
-            </Field>
-            <Field icon={<Lock className="h-4 w-4" />}>
-              <input
-                type="password"
-                required
-                minLength={6}
-                placeholder="Password (min 6)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-transparent outline-none text-sm placeholder:text-muted-foreground"
-              />
-            </Field>
-
-            <button
-              type="submit"
-              disabled={busy}
-              className="w-full rounded-2xl bg-brand-gradient text-white font-semibold py-3.5 shadow-ios tap-scale disabled:opacity-60"
-            >
-              {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
-            </button>
-          </form>
-
-          <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
-            <div className="h-px flex-1 bg-border" />
-            or
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
-          <button
-            type="button"
-            onClick={onGoogle}
-            disabled={busy}
-            className="w-full rounded-2xl bg-card border border-border py-3 text-sm font-semibold tap-scale flex items-center justify-center gap-2 disabled:opacity-60"
-          >
-            <GoogleIcon /> Continue with Google
-          </button>
-        </div>
+      {/* CTAs */}
+      <div className="mt-7 space-y-3 fade-up fade-up-4">
+        <button
+          onClick={onStart}
+          className="w-full rounded-full bg-white text-[#0b0612] font-semibold py-4 text-[15px] tap-scale shadow-[0_10px_40px_rgba(255,255,255,0.18)] hover:shadow-[0_14px_50px_rgba(255,255,255,0.28)] transition-shadow"
+        >
+          Get started
+        </button>
+        <button
+          onClick={onStart}
+          className="w-full rounded-full bg-white/8 border border-white/15 text-white font-medium py-4 text-[15px] tap-scale backdrop-blur"
+        >
+          I already have an account
+        </button>
+        <p className="text-center text-[11px] text-white/40 pt-2">
+          By continuing you agree to our Terms & Privacy.
+        </p>
       </div>
     </div>
   );
 }
 
-function Field({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+function FloatIcon({
+  className, children, delay, big,
+}: { className: string; children: React.ReactNode; delay: string; big?: boolean }) {
   return (
-    <div className="flex items-center gap-2 rounded-2xl bg-input/60 border border-border px-4 py-3 focus-within:ring-2 focus-within:ring-primary/40">
-      <span className="text-muted-foreground">{icon}</span>
+    <div
+      className={`float-icon ${big ? "float-icon-lg" : ""} ${className}`}
+      style={{ animationDelay: delay }}
+    >
+      <div className="float-icon-inner">
+        <div className="float-icon-shine" />
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function FormView(props: {
+  mode: "signin" | "signup";
+  setMode: (m: "signin" | "signup") => void;
+  name: string; setName: (v: string) => void;
+  email: string; setEmail: (v: string) => void;
+  password: string; setPassword: (v: string) => void;
+  busy: boolean;
+  onSubmit: (e: FormEvent) => void;
+  onGoogle: () => void;
+  onBack: () => void;
+}) {
+  const { mode, setMode, name, setName, email, setEmail, password, setPassword, busy, onSubmit, onGoogle, onBack } = props;
+  return (
+    <div className="relative z-10 flex-1 flex flex-col px-6 pt-6 pb-8 max-w-md mx-auto w-full animate-route-in">
+      <button
+        onClick={onBack}
+        className="self-start flex items-center gap-1.5 text-white/70 hover:text-white text-sm font-medium mb-6 tap-scale"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back
+      </button>
+
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-white tracking-tight">
+          {mode === "signin" ? "Welcome back" : "Create your account"}
+        </h1>
+        <p className="text-sm text-white/60 mt-1.5">
+          {mode === "signin" ? "Pick up where you left off ✨" : "Start your study journey today 💜"}
+        </p>
+      </div>
+
+      <div className="rounded-3xl bg-white/8 border border-white/15 backdrop-blur-xl p-5 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+        <div className="flex rounded-full bg-white/8 p-1 mb-5 border border-white/10">
+          <button
+            type="button"
+            onClick={() => setMode("signin")}
+            className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${mode === "signin" ? "bg-white text-[#0b0612]" : "text-white/70"}`}
+          >
+            Sign in
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("signup")}
+            className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${mode === "signup" ? "bg-white text-[#0b0612]" : "text-white/70"}`}
+          >
+            Create account
+          </button>
+        </div>
+
+        <form onSubmit={onSubmit} className="space-y-3">
+          {mode === "signup" && (
+            <DarkField icon={<UserIcon className="h-4 w-4" />}>
+              <input
+                type="text"
+                required
+                placeholder="Your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-transparent outline-none text-sm text-white placeholder:text-white/40"
+              />
+            </DarkField>
+          )}
+          <DarkField icon={<Mail className="h-4 w-4" />}>
+            <input
+              type="email"
+              required
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-transparent outline-none text-sm text-white placeholder:text-white/40"
+            />
+          </DarkField>
+          <DarkField icon={<Lock className="h-4 w-4" />}>
+            <input
+              type="password"
+              required
+              minLength={6}
+              placeholder="Password (min 6)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-transparent outline-none text-sm text-white placeholder:text-white/40"
+            />
+          </DarkField>
+
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full rounded-full bg-white text-[#0b0612] font-semibold py-3.5 mt-2 tap-scale disabled:opacity-60 shadow-[0_10px_30px_rgba(255,255,255,0.15)]"
+          >
+            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+          </button>
+        </form>
+
+        <div className="my-4 flex items-center gap-3 text-xs text-white/40">
+          <div className="h-px flex-1 bg-white/15" />
+          or
+          <div className="h-px flex-1 bg-white/15" />
+        </div>
+
+        <button
+          type="button"
+          onClick={onGoogle}
+          disabled={busy}
+          className="w-full rounded-full bg-white/8 border border-white/15 text-white py-3 text-sm font-semibold tap-scale flex items-center justify-center gap-2 disabled:opacity-60 hover:bg-white/12 transition"
+        >
+          <GoogleIcon /> Continue with Google
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DarkField({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 rounded-2xl bg-white/5 border border-white/10 px-4 py-3 focus-within:ring-2 focus-within:ring-white/30 focus-within:border-white/25 transition">
+      <span className="text-white/50">{icon}</span>
       {children}
     </div>
   );
