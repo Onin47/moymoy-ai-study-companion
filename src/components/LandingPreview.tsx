@@ -137,9 +137,9 @@ export function LandingPreview() {
       </div>
 
       {/* Preview surface */}
-      <div className="rounded-3xl bg-white/[0.06] border border-white/12 backdrop-blur-xl p-3.5 shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+      <div className="preview-surface rounded-3xl p-3.5 shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
         {/* Source note */}
-        <div className="rounded-2xl bg-black/35 border border-white/10 p-3.5">
+        <div className="preview-block rounded-2xl p-3.5">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-[10px] uppercase tracking-[0.18em] text-white/45 font-semibold">
               Your note
