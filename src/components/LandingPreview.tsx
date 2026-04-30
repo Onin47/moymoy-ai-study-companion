@@ -200,7 +200,7 @@ export function LandingPreview() {
 
           {/* Study plan */}
           <div
-            className={`rounded-2xl bg-black/35 border border-white/10 p-3.5 transition-all duration-500 ${
+            className={`preview-block rounded-2xl p-3.5 transition-all duration-500 ${
               showCard ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
             }`}
           >
