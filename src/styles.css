@@ -424,3 +424,150 @@
   transition: transform 200ms ease, opacity 200ms ease;
 }
 .swipe-peek.show .chev { transform: scale(1); opacity: 1; }
+
+/* ===== Landing / Auth dark welcome ===== */
+.landing-stage {
+  background: #0a0610;
+  color: #fff;
+  isolation: isolate;
+}
+/* override body pink gradient when landing is mounted */
+body:has(.landing-stage) { background: #0a0610 !important; animation: none !important; }
+body:has(.landing-stage)::before { opacity: 0.06; mix-blend-mode: screen; }
+
+.landing-bg {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(60% 40% at 50% 38%, rgba(151,125,223,0.35), transparent 70%),
+    radial-gradient(40% 30% at 80% 70%, rgba(242,230,238,0.10), transparent 70%),
+    radial-gradient(50% 35% at 15% 80%, rgba(120,90,200,0.18), transparent 70%),
+    linear-gradient(180deg, #0a0610 0%, #050308 100%);
+}
+.landing-grain {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  opacity: 0.08; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+.landing-gradient-text {
+  background: linear-gradient(135deg, #ffffff 0%, #c9b6ff 45%, #977DDF 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* particles */
+.landing-particles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.landing-particles .particle {
+  position: absolute; width: 4px; height: 4px; border-radius: 9999px;
+  background: rgba(255,255,255,0.5);
+  box-shadow: 0 0 8px rgba(255,255,255,0.6);
+  animation: particle-drift 8s ease-in-out infinite;
+}
+.landing-particles .particle:nth-child(odd) { width: 3px; height: 3px; opacity: 0.55; }
+.landing-particles .particle:nth-child(3n) { background: rgba(201,182,255,0.65); box-shadow: 0 0 10px rgba(151,125,223,0.7); }
+.landing-particles .particle:nth-child(5n) { width: 6px; height: 1px; border-radius: 2px; background: rgba(255,255,255,0.5); box-shadow: none; }
+.p-0  { top: 12%; left: 18%; animation-delay: -0.2s; }
+.p-1  { top: 22%; left: 78%; animation-delay: -1.4s; }
+.p-2  { top: 34%; left: 8%;  animation-delay: -2.8s; }
+.p-3  { top: 18%; left: 52%; animation-delay: -3.6s; }
+.p-4  { top: 44%; left: 88%; animation-delay: -4.4s; }
+.p-5  { top: 56%; left: 12%; animation-delay: -5.2s; }
+.p-6  { top: 62%; left: 70%; animation-delay: -6.0s; }
+.p-7  { top: 70%; left: 22%; animation-delay: -1.0s; }
+.p-8  { top: 80%; left: 58%; animation-delay: -2.2s; }
+.p-9  { top: 28%; left: 36%; animation-delay: -3.0s; }
+.p-10 { top: 48%; left: 48%; animation-delay: -4.0s; }
+.p-11 { top: 66%; left: 40%; animation-delay: -5.0s; }
+.p-12 { top: 14%; left: 86%; animation-delay: -6.5s; }
+.p-13 { top: 88%; left: 80%; animation-delay: -7.0s; }
+.p-14 { top: 38%; left: 60%; animation-delay: -1.8s; }
+.p-15 { top: 76%; left: 6%;  animation-delay: -2.6s; }
+.p-16 { top: 8%;  left: 30%; animation-delay: -3.4s; }
+.p-17 { top: 92%; left: 42%; animation-delay: -4.6s; }
+
+@keyframes particle-drift {
+  0%, 100% { transform: translate3d(0,0,0); opacity: 0.4; }
+  50%      { transform: translate3d(0,-12px,0); opacity: 0.9; }
+}
+
+/* 3D floating icon scene */
+.floating-scene {
+  position: relative;
+  width: min(360px, 88vw);
+  height: min(360px, 60vh);
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+.scene-glow {
+  position: absolute; inset: 12% 12%;
+  background: radial-gradient(circle at 50% 50%, rgba(151,125,223,0.55), rgba(151,125,223,0) 65%);
+  filter: blur(28px);
+  animation: moy-aura 5s ease-in-out infinite;
+}
+
+.float-icon {
+  position: absolute;
+  width: 76px; height: 76px;
+  transform-style: preserve-3d;
+  animation: icon-float 7s ease-in-out infinite;
+  will-change: transform;
+}
+.float-icon-lg { width: 104px; height: 104px; }
+
+.float-icon-inner {
+  position: relative;
+  width: 100%; height: 100%;
+  border-radius: 22px;
+  background:
+    linear-gradient(160deg, #2a1f4a 0%, #14091f 60%, #050208 100%);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    inset 0 -8px 14px rgba(0,0,0,0.55),
+    0 18px 40px rgba(0,0,0,0.55),
+    0 6px 18px rgba(151,125,223,0.25);
+  display: grid; place-items: center;
+  overflow: hidden;
+  transform: translateZ(0);
+}
+.float-icon-lg .float-icon-inner { border-radius: 28px; }
+.float-icon-shine {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(80% 40% at 30% 0%, rgba(255,255,255,0.35), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,0.08), transparent 35%);
+  pointer-events: none;
+}
+
+/* layout positions */
+.fi-1 { top: 8%;  left: 12%; transform: rotate(-12deg); animation-duration: 8s; }
+.fi-2 { top: 28%; left: 38%; transform: rotate(6deg);  animation-duration: 9s; }
+.fi-3 { top: 14%; right: 8%; transform: rotate(14deg); animation-duration: 7.5s; }
+.fi-4 { bottom: 18%; left: 6%; transform: rotate(8deg); animation-duration: 8.5s; }
+.fi-5 { bottom: 8%; right: 14%; transform: rotate(-10deg); animation-duration: 7.8s; }
+
+@keyframes icon-float {
+  0%, 100% { transform: translate3d(0,0,0) rotate(var(--r,0deg)); }
+  50%      { transform: translate3d(0,-14px,0) rotate(var(--r,0deg)); }
+}
+.fi-1 { --r: -12deg; }
+.fi-2 { --r: 6deg; }
+.fi-3 { --r: 14deg; }
+.fi-4 { --r: 8deg; }
+.fi-5 { --r: -10deg; }
+
+/* tiny orbit dots / dashes around scene */
+.orbit-dot {
+  position: absolute; width: 6px; height: 6px; border-radius: 9999px;
+  background: rgba(255,255,255,0.7);
+  box-shadow: 0 0 10px rgba(255,255,255,0.6);
+}
+.od-1 { top: 22%; left: 4%; }
+.od-2 { top: 6%;  left: 60%; width: 4px; height: 4px; opacity: 0.6; }
+.od-3 { bottom: 30%; right: 4%; width: 5px; height: 5px; }
+.od-4 { bottom: 6%; left: 36%; width: 4px; height: 4px; opacity: 0.5; }
+.orbit-dash {
+  position: absolute; width: 12px; height: 2px; border-radius: 2px;
+  background: rgba(255,255,255,0.45);
+}
+.od-d1 { top: 40%; left: 0%;  transform: rotate(35deg); }
+.od-d2 { top: 12%; right: 22%; transform: rotate(-25deg); }
+.od-d3 { bottom: 20%; right: 30%; transform: rotate(60deg); }
