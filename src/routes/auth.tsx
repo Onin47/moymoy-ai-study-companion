@@ -187,6 +187,22 @@ function WelcomeView({ onStart }: { onStart: () => void }) {
   );
 }
 
+function FloatIcon({
+  className, children, delay, big,
+}: { className: string; children: React.ReactNode; delay: string; big?: boolean }) {
+  return (
+    <div
+      className={`float-icon ${big ? "float-icon-lg" : ""} ${className}`}
+      style={{ animationDelay: delay }}
+    >
+      <div className="float-icon-inner">
+        <div className="float-icon-shine" />
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function FormView(props: {
   mode: "signin" | "signup";
   setMode: (m: "signin" | "signup") => void;
@@ -200,7 +216,7 @@ function FormView(props: {
 }) {
   const { mode, setMode, name, setName, email, setEmail, password, setPassword, busy, onSubmit, onGoogle, onBack } = props;
   return (
-    <div className="relative z-10 flex-1 flex flex-col px-6 pt-6 pb-8 max-w-md mx-auto w-full animate-route-in">
+    <div className="relative z-10 flex-1 flex flex-col px-5 sm:px-8 pt-6 lg:pt-12 pb-10 max-w-md md:max-w-lg mx-auto w-full animate-route-in">
       <button
         onClick={onBack}
         className="self-start flex items-center gap-1.5 text-white/70 hover:text-white text-sm font-medium mb-6 tap-scale"
