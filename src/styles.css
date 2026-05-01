@@ -707,10 +707,29 @@ body:has(.landing-stage)::before { opacity: 0.06; mix-blend-mode: screen; }
           mask-image: linear-gradient(180deg, #000 78%, transparent 100%);
 }
 
-/* Tighter, predictable scene size — taller on big phones, shorter on small ones */
+/* Tighter, predictable scene size — taller on big phones, shorter on small ones,
+   and generously larger on tablets/desktop where there's room to breathe */
 .floating-scene-compact {
   width: min(320px, 82vw);
   height: clamp(200px, 32vh, 260px);
+}
+@media (min-width: 768px) {
+  .floating-scene-compact {
+    width: min(420px, 60vw);
+    height: clamp(260px, 38vh, 360px);
+  }
+}
+@media (min-width: 1024px) {
+  .floating-scene-compact {
+    width: min(520px, 44vw);
+    height: clamp(320px, 48vh, 460px);
+  }
+  /* On desktop, the right column owns the preview, so the scene doesn't
+     need to fade into anything below it — drop the mask for a cleaner look. */
+  .scene-frame {
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
 }
 
 /* Preview card: keep the flashcard readable while scrolling past the icon scene.
