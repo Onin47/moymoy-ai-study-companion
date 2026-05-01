@@ -453,13 +453,18 @@ body:has(.landing-stage)::before { opacity: 0.06; mix-blend-mode: screen; }
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 
-/* particles */
-.landing-particles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+/* particles — isolated layer so animation never invalidates siblings */
+.landing-particles {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  contain: layout paint style;
+  transform: translateZ(0);
+}
 .landing-particles .particle {
   position: absolute; width: 4px; height: 4px; border-radius: 9999px;
   background: rgba(255,255,255,0.5);
   box-shadow: 0 0 8px rgba(255,255,255,0.6);
   animation: particle-drift 8s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 .landing-particles .particle:nth-child(odd) { width: 3px; height: 3px; opacity: 0.55; }
 .landing-particles .particle:nth-child(3n) { background: rgba(201,182,255,0.65); box-shadow: 0 0 10px rgba(151,125,223,0.7); }
