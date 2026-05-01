@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Sparkles, Mail, Lock, User as UserIcon, Brain, BookOpen, MessageCircle, Flame, ArrowLeft } from "lucide-react";
@@ -100,6 +100,23 @@ function AuthPage() {
 }
 
 function WelcomeView({ onStart }: { onStart: () => void }) {
+  const sceneRef = useRef<HTMLDivElement | null>(null);
+
+  // Pause expensive ambient animations when the scene scrolls off-screen.
+  // Saves compositor work on mobile and dramatically reduces scroll jank.
+  useEffect(() => {
+    const el = sceneRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        el.classList.toggle("scene-paused", !entry.isIntersecting);
+      },
+      { rootMargin: "120px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
     <div className="relative z-10 w-full mx-auto px-5 sm:px-8 lg:px-12 pt-8 lg:pt-10 pb-10 max-w-md md:max-w-3xl lg:max-w-6xl xl:max-w-7xl">
       {/* Brand mark */}
@@ -115,7 +132,7 @@ function WelcomeView({ onStart }: { onStart: () => void }) {
         {/* LEFT: scene + copy + CTAs */}
         <div className="flex flex-col">
           {/* 3D floating icon scene */}
-          <div className="scene-frame mx-auto lg:mx-0">
+          <div ref={sceneRef} className="scene-frame mx-auto lg:mx-0">
             <div className="floating-scene floating-scene-compact">
               {/* Soft glow */}
               <div className="scene-glow" aria-hidden />
