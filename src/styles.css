@@ -500,12 +500,18 @@ body:has(.landing-stage)::before { opacity: 0.06; mix-blend-mode: screen; }
   height: min(360px, 60vh);
   perspective: 1200px;
   transform-style: preserve-3d;
+  /* isolate this layer from page paint during scroll */
+  contain: layout paint style;
+  transform: translateZ(0);
 }
 .scene-glow {
   position: absolute; inset: 12% 12%;
   background: radial-gradient(circle at 50% 50%, rgba(151,125,223,0.55), rgba(151,125,223,0) 65%);
-  filter: blur(28px);
+  /* filter:blur is expensive — replaced by a pre-blurred radial gradient.
+     Only animate opacity (compositor-only, no repaint). */
   animation: moy-aura 5s ease-in-out infinite;
+  will-change: opacity;
+  transform: translateZ(0);
 }
 
 .float-icon {
