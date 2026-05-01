@@ -101,79 +101,87 @@ function AuthPage() {
 
 function WelcomeView({ onStart }: { onStart: () => void }) {
   return (
-    <div className="relative z-10 flex flex-col px-6 pt-10 pb-8 max-w-md mx-auto w-full">
+    <div className="relative z-10 w-full mx-auto px-5 sm:px-8 lg:px-12 pt-8 lg:pt-10 pb-10 max-w-md md:max-w-3xl lg:max-w-6xl xl:max-w-7xl">
       {/* Brand mark */}
       <div className="flex items-center gap-2 fade-up fade-up-1">
-        <div className="grid h-9 w-9 place-items-center rounded-2xl bg-white/10 border border-white/15 backdrop-blur">
-          <Sparkles className="h-4 w-4 text-white" strokeWidth={2.5} />
+        <div className="grid h-9 w-9 lg:h-10 lg:w-10 place-items-center rounded-2xl bg-white/10 border border-white/15 backdrop-blur">
+          <Sparkles className="h-4 w-4 lg:h-5 lg:w-5 text-white" strokeWidth={2.5} />
         </div>
-        <span className="text-white/90 font-semibold tracking-tight">MoyMoy</span>
+        <span className="text-white/90 font-semibold tracking-tight lg:text-lg">MoyMoy</span>
       </div>
 
-      {/* 3D floating icon scene */}
-      <div className="scene-frame my-4">
-        <div className="floating-scene floating-scene-compact">
-          {/* Soft glow */}
-          <div className="scene-glow" aria-hidden />
+      {/* Two-column hero on lg+, stacked on mobile/tablet */}
+      <div className="mt-4 lg:mt-10 grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-8 lg:gap-14 xl:gap-20 items-center">
+        {/* LEFT: scene + copy + CTAs */}
+        <div className="flex flex-col">
+          {/* 3D floating icon scene */}
+          <div className="scene-frame mx-auto lg:mx-0">
+            <div className="floating-scene floating-scene-compact">
+              {/* Soft glow */}
+              <div className="scene-glow" aria-hidden />
 
-          {/* Tiny orbit dots */}
-          <span className="orbit-dot od-1" />
-          <span className="orbit-dot od-2" />
-          <span className="orbit-dot od-3" />
-          <span className="orbit-dot od-4" />
-          <span className="orbit-dash od-d1" />
-          <span className="orbit-dash od-d2" />
-          <span className="orbit-dash od-d3" />
+              {/* Tiny orbit dots */}
+              <span className="orbit-dot od-1" />
+              <span className="orbit-dot od-2" />
+              <span className="orbit-dot od-3" />
+              <span className="orbit-dot od-4" />
+              <span className="orbit-dash od-d1" />
+              <span className="orbit-dash od-d2" />
+              <span className="orbit-dash od-d3" />
 
-          <FloatIcon className="fi fi-1" delay="0s">
-            <Brain className="h-7 w-7 text-white" strokeWidth={1.8} />
-          </FloatIcon>
-          <FloatIcon className="fi fi-2" delay="-2s" big>
-            <Sparkles className="h-9 w-9 text-white" strokeWidth={1.8} />
-          </FloatIcon>
-          <FloatIcon className="fi fi-3" delay="-4s">
-            <BookOpen className="h-7 w-7 text-white" strokeWidth={1.8} />
-          </FloatIcon>
-          <FloatIcon className="fi fi-4" delay="-1s">
-            <MessageCircle className="h-6 w-6 text-white" strokeWidth={1.8} />
-          </FloatIcon>
-          <FloatIcon className="fi fi-5" delay="-3s">
-            <Flame className="h-6 w-6 text-white" strokeWidth={1.8} />
-          </FloatIcon>
+              <FloatIcon className="fi fi-1" delay="0s">
+                <Brain className="h-7 w-7 text-white" strokeWidth={1.8} />
+              </FloatIcon>
+              <FloatIcon className="fi fi-2" delay="-2s" big>
+                <Sparkles className="h-9 w-9 text-white" strokeWidth={1.8} />
+              </FloatIcon>
+              <FloatIcon className="fi fi-3" delay="-4s">
+                <BookOpen className="h-7 w-7 text-white" strokeWidth={1.8} />
+              </FloatIcon>
+              <FloatIcon className="fi fi-4" delay="-1s">
+                <MessageCircle className="h-6 w-6 text-white" strokeWidth={1.8} />
+              </FloatIcon>
+              <FloatIcon className="fi fi-5" delay="-3s">
+                <Flame className="h-6 w-6 text-white" strokeWidth={1.8} />
+              </FloatIcon>
+            </div>
+          </div>
+
+          {/* Copy */}
+          <div className="text-center lg:text-left fade-up fade-up-2 mt-2 lg:mt-6">
+            <h1 className="font-bold tracking-tight text-white text-[clamp(32px,7vw,64px)] leading-[1.04]">
+              Study smarter,<br />
+              <span className="landing-gradient-text">feel lighter.</span>
+            </h1>
+            <p className="mt-3 lg:mt-5 text-white/65 max-w-xs sm:max-w-md mx-auto lg:mx-0 text-[clamp(14px,1.6vw,17px)]">
+              Your AI companion for notes, flashcards, and focused study sessions.
+            </p>
+          </div>
+
+          {/* CTAs */}
+          <div className="mt-7 lg:mt-8 space-y-3 fade-up fade-up-4 max-w-sm w-full mx-auto lg:mx-0 lg:flex lg:space-y-0 lg:gap-3 lg:max-w-lg">
+            <button
+              onClick={onStart}
+              className="w-full rounded-full bg-white text-[#0b0612] font-semibold py-4 lg:py-3.5 text-[15px] lg:text-base tap-scale shadow-[0_10px_40px_rgba(255,255,255,0.18)] hover:shadow-[0_14px_50px_rgba(255,255,255,0.28)] transition-shadow"
+            >
+              Get started
+            </button>
+            <button
+              onClick={onStart}
+              className="w-full rounded-full bg-white/8 border border-white/15 text-white font-medium py-4 lg:py-3.5 text-[15px] lg:text-base tap-scale backdrop-blur"
+            >
+              I already have an account
+            </button>
+          </div>
+          <p className="text-center lg:text-left text-[11px] text-white/40 pt-3 lg:pt-4">
+            By continuing you agree to our Terms & Privacy.
+          </p>
         </div>
-      </div>
 
-      {/* Copy */}
-      <div className="text-center fade-up fade-up-2">
-        <h1 className="text-[36px] leading-[1.05] font-bold tracking-tight text-white">
-          Study smarter,<br />
-          <span className="landing-gradient-text">feel lighter.</span>
-        </h1>
-        <p className="mt-3 text-[14px] text-white/65 max-w-xs mx-auto">
-          Your AI companion for notes, flashcards, and focused study sessions.
-        </p>
-      </div>
-
-      {/* Interactive AI preview */}
-      <LandingPreview />
-
-      {/* CTAs */}
-      <div className="mt-7 space-y-3 fade-up fade-up-4">
-        <button
-          onClick={onStart}
-          className="w-full rounded-full bg-white text-[#0b0612] font-semibold py-4 text-[15px] tap-scale shadow-[0_10px_40px_rgba(255,255,255,0.18)] hover:shadow-[0_14px_50px_rgba(255,255,255,0.28)] transition-shadow"
-        >
-          Get started
-        </button>
-        <button
-          onClick={onStart}
-          className="w-full rounded-full bg-white/8 border border-white/15 text-white font-medium py-4 text-[15px] tap-scale backdrop-blur"
-        >
-          I already have an account
-        </button>
-        <p className="text-center text-[11px] text-white/40 pt-2">
-          By continuing you agree to our Terms & Privacy.
-        </p>
+        {/* RIGHT: interactive AI preview */}
+        <div className="w-full max-w-md mx-auto lg:max-w-xl lg:mx-0">
+          <LandingPreview />
+        </div>
       </div>
     </div>
   );
@@ -208,7 +216,7 @@ function FormView(props: {
 }) {
   const { mode, setMode, name, setName, email, setEmail, password, setPassword, busy, onSubmit, onGoogle, onBack } = props;
   return (
-    <div className="relative z-10 flex-1 flex flex-col px-6 pt-6 pb-8 max-w-md mx-auto w-full animate-route-in">
+    <div className="relative z-10 flex-1 flex flex-col px-5 sm:px-8 pt-6 lg:pt-12 pb-10 max-w-md md:max-w-lg mx-auto w-full animate-route-in">
       <button
         onClick={onBack}
         className="self-start flex items-center gap-1.5 text-white/70 hover:text-white text-sm font-medium mb-6 tap-scale"
