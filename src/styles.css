@@ -706,16 +706,24 @@ body:has(.landing-stage)::before { opacity: 0.06; mix-blend-mode: screen; }
 .landing-stage { overflow: visible; }
 
 /* Clip the floating icon scene so its absolutely-positioned icons can't bleed
-   over the preview card below it during scroll */
+   over the preview card below it during scroll. We use a cheap gradient overlay
+   instead of mask-image (mask forces a full repaint of the masked region every
+   scroll frame on mobile GPUs). */
 .scene-frame {
   position: relative;
   width: 100%;
   display: grid;
   place-items: center;
   overflow: hidden;
-  /* fade out icons near the bottom edge so the transition into the preview is clean */
-  -webkit-mask-image: linear-gradient(180deg, #000 78%, transparent 100%);
-          mask-image: linear-gradient(180deg, #000 78%, transparent 100%);
+  contain: layout paint style;
+}
+.scene-frame::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 22%;
+  background: linear-gradient(180deg, rgba(10,6,16,0) 0%, #0a0610 100%);
+  pointer-events: none;
 }
 
 /* Tighter, predictable scene size — taller on big phones, shorter on small ones,
@@ -736,21 +744,24 @@ body:has(.landing-stage)::before { opacity: 0.06; mix-blend-mode: screen; }
     height: clamp(320px, 48vh, 460px);
   }
   /* On desktop, the right column owns the preview, so the scene doesn't
-     need to fade into anything below it — drop the mask for a cleaner look. */
-  .scene-frame {
-    -webkit-mask-image: none;
-            mask-image: none;
-  }
+     need a fade into anything below it. */
+  .scene-frame::after { display: none; }
 }
 
 /* Preview card: keep the flashcard readable while scrolling past the icon scene.
-   Stronger background + saturated blur prevents the colorful particles/glow
-   from washing out the text underneath. */
+   Backdrop-filter is one of the most expensive scroll-time paints on mobile,
+   so we use it only on desktop and fall back to a solid surface on phones. */
 .preview-surface {
-  background: rgba(14, 8, 24, 0.72);
-  -webkit-backdrop-filter: saturate(160%) blur(22px);
-          backdrop-filter: saturate(160%) blur(22px);
+  background: rgba(14, 8, 24, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.10);
+  contain: layout paint style;
+}
+@media (min-width: 1024px) {
+  .preview-surface {
+    background: rgba(14, 8, 24, 0.72);
+    -webkit-backdrop-filter: saturate(160%) blur(18px);
+            backdrop-filter: saturate(160%) blur(18px);
+  }
 }
 
 /* Same treatment for the inner note + plan blocks so they stay legible */
@@ -758,3 +769,25 @@ body:has(.landing-stage)::before { opacity: 0.06; mix-blend-mode: screen; }
   background: rgba(0, 0, 0, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+/* Pause continuous scene animations when off-screen — toggled by IntersectionObserver.
+   Saves significant compositor work while the user scrolls past the hero. */
+.scene-paused .float-icon,
+.scene-paused .scene-glow,
+.scene-paused .landing-particles .particle,
+.scene-paused .type-caret {
+  animation-play-state: paused !important;
+}
+
+/* Respect users who prefer reduced motion — kill long-running ambient loops. */
+@media (prefers-reduced-motion: reduce) {
+  .float-icon,
+  .scene-glow,
+  .landing-particles .particle,
+  .type-caret,
+  .animate-pulse-soft {
+    animation: none !important;
+  }
+  .flashcard { transition: none !important; }
+}
+
