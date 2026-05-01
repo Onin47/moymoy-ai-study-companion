@@ -602,12 +602,18 @@ body:has(.landing-stage)::before { opacity: 0.06; mix-blend-mode: screen; }
 .animate-pulse-soft.delay-150 { animation-delay: 150ms; }
 .animate-pulse-soft.delay-300 { animation-delay: 300ms; }
 
-/* Flashcard 3D flip */
-.flashcard-scene { perspective: 1200px; }
+/* Flashcard 3D flip — auto-scales to content on every screen */
+.flashcard-scene {
+  perspective: 1200px;
+  /* isolate paint so scrolling background layers don't cause repaint thrash */
+  contain: layout paint;
+}
 .flashcard {
-  position: relative;
+  /* CSS grid stack: both faces occupy the same cell, so the card's height
+     grows to fit whichever face has more text. No clipping, no fixed height. */
+  display: grid;
+  grid-template-areas: "stack";
   width: 100%;
-  min-height: 132px;
   transform-style: preserve-3d;
   transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
   cursor: pointer;
@@ -615,19 +621,26 @@ body:has(.landing-stage)::before { opacity: 0.06; mix-blend-mode: screen; }
   background: transparent;
   border: 0;
   padding: 0;
+  /* keep the card from getting absurdly wide on tablets */
+  max-width: 100%;
 }
 .flashcard.is-flipped { transform: rotateY(180deg); }
 .flashcard-face {
-  position: absolute; inset: 0;
+  grid-area: stack;
   border-radius: 18px;
-  padding: 14px 16px 12px;
-  display: flex; flex-direction: column; gap: 6px;
+  /* fluid padding scales with viewport so small phones get tighter cards */
+  padding: clamp(12px, 3.4vw, 18px) clamp(14px, 4vw, 20px);
+  display: flex; flex-direction: column; gap: 8px;
+  min-height: clamp(120px, 22vw, 160px);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   border: 1px solid rgba(255,255,255,0.14);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.18),
     0 18px 40px rgba(0,0,0,0.45);
+  /* GPU-promote so text stays crisp during scroll + flip */
+  will-change: transform;
+  transform: translateZ(0);
 }
 .flashcard-front {
   background: linear-gradient(160deg, #2a1f4a 0%, #14091f 100%);
@@ -639,18 +652,32 @@ body:has(.landing-stage)::before { opacity: 0.06; mix-blend-mode: screen; }
   transform: rotateY(180deg);
 }
 .flashcard-back .card-eyebrow,
-.flashcard-back .card-hint { color: rgba(26,13,51,0.75); }
+.flashcard-back .card-hint { color: rgba(26,13,51,0.78); }
 .card-eyebrow {
-  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-  font-weight: 700; color: rgba(255,255,255,0.55);
+  font-size: clamp(9.5px, 2.6vw, 11px);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  font-weight: 700; color: rgba(255,255,255,0.6);
 }
 .card-text {
-  font-size: 14.5px; line-height: 1.4; font-weight: 600; flex: 1;
+  /* fluid type — readable on 320px phones, never oversized on tablets */
+  font-size: clamp(14px, 4vw, 17px);
+  line-height: 1.42;
+  font-weight: 600;
+  flex: 1;
+  /* prevent long words/URLs from forcing horizontal overflow */
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  /* sharper rendering on retina during transforms */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 .card-hint {
   display: inline-flex; align-items: center; gap: 4px;
-  font-size: 10.5px; color: rgba(255,255,255,0.55);
+  font-size: clamp(10px, 2.8vw, 11.5px);
+  color: rgba(255,255,255,0.6);
   align-self: flex-end;
+  margin-top: 4px;
 }
 
 /* ===== Landing scroll fixes ===== */
