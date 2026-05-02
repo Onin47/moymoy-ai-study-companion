@@ -276,18 +276,33 @@ function WelcomeView({
 }
 
 function FloatIcon({
-  className, children, delay, big,
-}: { className: string; children: React.ReactNode; delay: string; big?: boolean }) {
+  className, children, delay, big, featureKey, selected, onSelect, label,
+}: {
+  className: string;
+  children: React.ReactNode;
+  delay: string;
+  big?: boolean;
+  featureKey: FeatureKey;
+  selected: boolean;
+  onSelect: (k: FeatureKey) => void;
+  label: string;
+}) {
   return (
-    <div
-      className={`float-icon ${big ? "float-icon-lg" : ""} ${className}`}
+    <button
+      type="button"
+      onClick={() => onSelect(featureKey)}
+      aria-pressed={selected}
+      aria-label={label}
+      title={label}
+      className={`float-icon ${big ? "float-icon-lg" : ""} ${selected ? "is-selected" : ""} ${className}`}
       style={{ animationDelay: delay }}
     >
       <div className="float-icon-inner">
         <div className="float-icon-shine" />
         {children}
+        <span className="float-icon-label" aria-hidden>{label}</span>
       </div>
-    </div>
+    </button>
   );
 }
 
