@@ -143,6 +143,7 @@ function WelcomeView({
 }) {
   const sceneRef = useRef<HTMLDivElement | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
+  const [selectedFeature, setSelectedFeature] = useState<FeatureKey>("ai");
 
   // Lazy-mount the heavy 3D scene + interactive preview only when they're
   // about to enter the viewport. Cheaper first paint on phones/tablets.
