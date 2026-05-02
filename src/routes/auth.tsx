@@ -1,10 +1,18 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Sparkles, Mail, Lock, User as UserIcon, Brain, BookOpen, MessageCircle, Flame, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { LandingPreview } from "@/components/LandingPreview";
+import { useInViewport, usePrefersReducedMotion } from "@/hooks/use-in-viewport";
+import { LandingPreviewSkeleton, SceneSkeleton } from "@/components/LandingSkeleton";
+import { PerfOverlay } from "@/components/PerfOverlay";
+
+// Lazy-load the interactive preview so it doesn't block first paint and only
+// pulls its JS when it's about to enter the viewport.
+const LandingPreview = lazy(() =>
+  import("@/components/LandingPreview").then((m) => ({ default: m.LandingPreview })),
+);
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
