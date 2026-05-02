@@ -188,37 +188,42 @@ function WelcomeView({
       <div className="mt-4 lg:mt-10 grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-8 lg:gap-14 xl:gap-20 items-center">
         {/* LEFT: scene + copy + CTAs */}
         <div className="flex flex-col">
-          {/* 3D floating icon scene */}
+          {/* 3D floating icon scene — lazy-mounted, with a skeleton placeholder
+              that reserves the same footprint to prevent layout shift. */}
           <div ref={sceneRef} className="scene-frame mx-auto lg:mx-0">
-            <div className="floating-scene floating-scene-compact">
-              {/* Soft glow */}
-              <div className="scene-glow" aria-hidden />
+            {sceneInView ? (
+              <div className="floating-scene floating-scene-compact">
+                {/* Soft glow */}
+                <div className="scene-glow" aria-hidden />
 
-              {/* Tiny orbit dots */}
-              <span className="orbit-dot od-1" />
-              <span className="orbit-dot od-2" />
-              <span className="orbit-dot od-3" />
-              <span className="orbit-dot od-4" />
-              <span className="orbit-dash od-d1" />
-              <span className="orbit-dash od-d2" />
-              <span className="orbit-dash od-d3" />
+                {/* Tiny orbit dots */}
+                <span className="orbit-dot od-1" />
+                <span className="orbit-dot od-2" />
+                <span className="orbit-dot od-3" />
+                <span className="orbit-dot od-4" />
+                <span className="orbit-dash od-d1" />
+                <span className="orbit-dash od-d2" />
+                <span className="orbit-dash od-d3" />
 
-              <FloatIcon className="fi fi-1" delay="0s">
-                <Brain className="h-7 w-7 text-white" strokeWidth={1.8} />
-              </FloatIcon>
-              <FloatIcon className="fi fi-2" delay="-2s" big>
-                <Sparkles className="h-9 w-9 text-white" strokeWidth={1.8} />
-              </FloatIcon>
-              <FloatIcon className="fi fi-3" delay="-4s">
-                <BookOpen className="h-7 w-7 text-white" strokeWidth={1.8} />
-              </FloatIcon>
-              <FloatIcon className="fi fi-4" delay="-1s">
-                <MessageCircle className="h-6 w-6 text-white" strokeWidth={1.8} />
-              </FloatIcon>
-              <FloatIcon className="fi fi-5" delay="-3s">
-                <Flame className="h-6 w-6 text-white" strokeWidth={1.8} />
-              </FloatIcon>
-            </div>
+                <FloatIcon className="fi fi-1" delay="0s">
+                  <Brain className="h-7 w-7 text-white" strokeWidth={1.8} />
+                </FloatIcon>
+                <FloatIcon className="fi fi-2" delay="-2s" big>
+                  <Sparkles className="h-9 w-9 text-white" strokeWidth={1.8} />
+                </FloatIcon>
+                <FloatIcon className="fi fi-3" delay="-4s">
+                  <BookOpen className="h-7 w-7 text-white" strokeWidth={1.8} />
+                </FloatIcon>
+                <FloatIcon className="fi fi-4" delay="-1s">
+                  <MessageCircle className="h-6 w-6 text-white" strokeWidth={1.8} />
+                </FloatIcon>
+                <FloatIcon className="fi fi-5" delay="-3s">
+                  <Flame className="h-6 w-6 text-white" strokeWidth={1.8} />
+                </FloatIcon>
+              </div>
+            ) : (
+              <SceneSkeleton />
+            )}
           </div>
 
           {/* Copy */}
