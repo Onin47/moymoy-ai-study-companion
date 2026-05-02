@@ -207,19 +207,19 @@ function WelcomeView({
                 <span className="orbit-dash od-d2" />
                 <span className="orbit-dash od-d3" />
 
-                <FloatIcon className="fi fi-1" delay="0s">
+                <FloatIcon className="fi fi-1" delay="0s" featureKey="notes" selected={selectedFeature === "notes"} onSelect={setSelectedFeature} label="Smart Notes">
                   <Brain className="h-7 w-7 text-white" strokeWidth={1.8} />
                 </FloatIcon>
-                <FloatIcon className="fi fi-2" delay="-2s" big>
+                <FloatIcon className="fi fi-2" delay="-2s" big featureKey="ai" selected={selectedFeature === "ai"} onSelect={setSelectedFeature} label="AI Generate">
                   <Sparkles className="h-9 w-9 text-white" strokeWidth={1.8} />
                 </FloatIcon>
-                <FloatIcon className="fi fi-3" delay="-4s">
+                <FloatIcon className="fi fi-3" delay="-4s" featureKey="flashcards" selected={selectedFeature === "flashcards"} onSelect={setSelectedFeature} label="Flashcards">
                   <BookOpen className="h-7 w-7 text-white" strokeWidth={1.8} />
                 </FloatIcon>
-                <FloatIcon className="fi fi-4" delay="-1s">
+                <FloatIcon className="fi fi-4" delay="-1s" featureKey="chat" selected={selectedFeature === "chat"} onSelect={setSelectedFeature} label="AI Tutor">
                   <MessageCircle className="h-6 w-6 text-white" strokeWidth={1.8} />
                 </FloatIcon>
-                <FloatIcon className="fi fi-5" delay="-3s">
+                <FloatIcon className="fi fi-5" delay="-3s" featureKey="streak" selected={selectedFeature === "streak"} onSelect={setSelectedFeature} label="Daily Streak">
                   <Flame className="h-6 w-6 text-white" strokeWidth={1.8} />
                 </FloatIcon>
               </div>
