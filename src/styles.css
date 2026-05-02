@@ -775,19 +775,69 @@ body:has(.landing-stage)::before { opacity: 0.06; mix-blend-mode: screen; }
 .scene-paused .float-icon,
 .scene-paused .scene-glow,
 .scene-paused .landing-particles .particle,
-.scene-paused .type-caret {
+.scene-paused .type-caret,
+.scene-paused .animate-pulse-soft {
   animation-play-state: paused !important;
 }
 
-/* Respect users who prefer reduced motion — kill long-running ambient loops. */
+/* Respect users who prefer reduced motion — kill long-running ambient loops AND
+   one-shot transitions on every device size. The flashcard flip is cleared so
+   the card never animates between faces, regardless of viewport. */
 @media (prefers-reduced-motion: reduce) {
   .float-icon,
   .scene-glow,
   .landing-particles .particle,
   .type-caret,
-  .animate-pulse-soft {
+  .animate-pulse-soft,
+  .fade-up,
+  .fade-up-1,
+  .fade-up-2,
+  .fade-up-3,
+  .fade-up-4 {
     animation: none !important;
   }
-  .flashcard { transition: none !important; }
+  .flashcard,
+  .flashcard.is-flipped {
+    transition: none !important;
+    transform: none !important;
+  }
+  /* Keep the back face oriented correctly even with the flip transform stripped. */
+  .flashcard-back { transform: rotateY(180deg) !important; }
+  /* Hide the particle layer outright — no flicker, no GPU work. */
+  .landing-particles { display: none !important; }
+}
+
+/* Breakpoint-tuned timing — particles drift slower & glow pulses gentler on
+   smaller screens so phone scrolling feels calm; desktops get livelier motion. */
+.landing-particles .particle { animation-duration: 9s; }      /* phones: slow */
+.scene-glow                  { animation-duration: 6s; }
+@media (min-width: 768px) {
+  .landing-particles .particle { animation-duration: 8s; }    /* tablets */
+  .scene-glow                  { animation-duration: 5.5s; }
+}
+@media (min-width: 1024px) {
+  .landing-particles .particle { animation-duration: 7s; }    /* desktop */
+  .scene-glow                  { animation-duration: 5s; }
+}
+
+/* Scene skeleton — reserves the floating-scene footprint while the real scene
+   is lazy-mounting, so nothing on the page jumps when it appears. */
+.scene-skeleton {
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.scene-skeleton-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  opacity: 0.55;
+}
+@media (min-width: 768px) {
+  .scene-skeleton { width: min(420px, 60vw) !important; height: clamp(260px, 38vh, 360px) !important; }
+}
+@media (min-width: 1024px) {
+  .scene-skeleton { width: min(520px, 44vw) !important; height: clamp(320px, 48vh, 460px) !important; }
 }
 
