@@ -131,14 +131,39 @@ function AuthPage() {
   );
 }
 
-function WelcomeView({ onStart }: { onStart: () => void }) {
+function WelcomeView({
+  onStart,
+  perfSceneRef,
+  reducedMotion,
+}: {
+  onStart: () => void;
+  perfSceneRef: React.RefObject<HTMLDivElement | null>;
+  reducedMotion: boolean;
+}) {
   const sceneRef = useRef<HTMLDivElement | null>(null);
+  const previewRef = useRef<HTMLDivElement | null>(null);
+
+  // Lazy-mount the heavy 3D scene + interactive preview only when they're
+  // about to enter the viewport. Cheaper first paint on phones/tablets.
+  const sceneInView = useInViewport(sceneRef, "250px 0px");
+  const previewInView = useInViewport(previewRef, "300px 0px");
+
+  // Expose the scene element to the parent so the perf overlay can read its
+  // `.scene-paused` class.
+  useEffect(() => {
+    perfSceneRef.current = sceneRef.current;
+  }, [perfSceneRef, sceneInView]);
 
   // Pause expensive ambient animations when the scene scrolls off-screen.
   // Saves compositor work on mobile and dramatically reduces scroll jank.
   useEffect(() => {
     const el = sceneRef.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
+    // Reduced-motion users don't need the IO at all — animations are off.
+    if (reducedMotion) {
+      el.classList.add("scene-paused");
+      return;
+    }
     const io = new IntersectionObserver(
       ([entry]) => {
         el.classList.toggle("scene-paused", !entry.isIntersecting);
@@ -147,7 +172,7 @@ function WelcomeView({ onStart }: { onStart: () => void }) {
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <div className="relative z-10 w-full mx-auto px-5 sm:px-8 lg:px-12 pt-8 lg:pt-10 pb-10 max-w-md md:max-w-3xl lg:max-w-6xl xl:max-w-7xl">
