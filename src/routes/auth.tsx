@@ -257,9 +257,16 @@ function WelcomeView({
           </p>
         </div>
 
-        {/* RIGHT: interactive AI preview */}
-        <div className="w-full max-w-md mx-auto lg:max-w-xl lg:mx-0">
-          <LandingPreview />
+        {/* RIGHT: interactive AI preview — lazy-loaded, with a skeleton that
+            matches the final layout to prevent jump-on-mount. */}
+        <div ref={previewRef} className="w-full max-w-md mx-auto lg:max-w-xl lg:mx-0">
+          {previewInView ? (
+            <Suspense fallback={<LandingPreviewSkeleton />}>
+              <LandingPreview />
+            </Suspense>
+          ) : (
+            <LandingPreviewSkeleton />
+          )}
         </div>
       </div>
     </div>
