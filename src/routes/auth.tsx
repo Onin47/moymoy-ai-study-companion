@@ -75,19 +75,41 @@ function AuthPage() {
     }
   };
 
+  // Debug overlay opt-in: append `?perf=1` to the URL.
+  const [showPerf, setShowPerf] = useState(false);
+  const perfSceneRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    setShowPerf(params.get("perf") === "1");
+  }, []);
+
+  // Lazy-mount the particle layer only when the hero is near the viewport.
+  const particlesAnchorRef = useRef<HTMLDivElement | null>(null);
+  const particlesReady = useInViewport(particlesAnchorRef, "300px 0px");
+  const reducedMotion = usePrefersReducedMotion();
+
   return (
     <div className="landing-stage relative min-h-screen flex flex-col">
+      {/* Anchor used by the particle IntersectionObserver — zero size, top of stage. */}
+      <div ref={particlesAnchorRef} aria-hidden style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
+
       {/* Atmospheric background — fixed to viewport so it never overlaps scrolled content */}
       <div className="landing-bg landing-fixed" aria-hidden />
       <div className="landing-grain landing-fixed" aria-hidden />
-      {/* Particle dots */}
-      <div className="landing-particles landing-fixed" aria-hidden>
-        {Array.from({ length: 18 }).map((_, i) => (
-          <span key={i} className={`particle p-${i}`} />
-        ))}
-      </div>
+      {/* Particle dots — only mounted once the hero is near the viewport, and
+          skipped entirely when the user prefers reduced motion. */}
+      {particlesReady && !reducedMotion && (
+        <div className="landing-particles landing-fixed" aria-hidden>
+          {Array.from({ length: 18 }).map((_, i) => (
+            <span key={i} className={`particle p-${i}`} />
+          ))}
+        </div>
+      )}
 
-      {view === "welcome" ? <WelcomeView onStart={() => setView("form")} /> : (
+      {view === "welcome" ? (
+        <WelcomeView onStart={() => setView("form")} perfSceneRef={perfSceneRef} reducedMotion={reducedMotion} />
+      ) : (
         <FormView
           mode={mode}
           setMode={setMode}
@@ -103,6 +125,8 @@ function AuthPage() {
           onBack={() => setView("welcome")}
         />
       )}
+
+      <PerfOverlay sceneRef={perfSceneRef} enabled={showPerf} />
     </div>
   );
 }
