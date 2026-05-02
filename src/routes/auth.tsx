@@ -264,7 +264,7 @@ function WelcomeView({
         <div ref={previewRef} className="w-full max-w-md mx-auto lg:max-w-xl lg:mx-0">
           {previewInView ? (
             <Suspense fallback={<LandingPreviewSkeleton />}>
-              <LandingPreview />
+              <LandingPreview feature={selectedFeature} />
             </Suspense>
           ) : (
             <LandingPreviewSkeleton />
