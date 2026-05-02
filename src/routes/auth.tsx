@@ -1,10 +1,18 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Sparkles, Mail, Lock, User as UserIcon, Brain, BookOpen, MessageCircle, Flame, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { LandingPreview } from "@/components/LandingPreview";
+import { useInViewport, usePrefersReducedMotion } from "@/hooks/use-in-viewport";
+import { LandingPreviewSkeleton, SceneSkeleton } from "@/components/LandingSkeleton";
+import { PerfOverlay } from "@/components/PerfOverlay";
+
+// Lazy-load the interactive preview so it doesn't block first paint and only
+// pulls its JS when it's about to enter the viewport.
+const LandingPreview = lazy(() =>
+  import("@/components/LandingPreview").then((m) => ({ default: m.LandingPreview })),
+);
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -67,19 +75,41 @@ function AuthPage() {
     }
   };
 
+  // Debug overlay opt-in: append `?perf=1` to the URL.
+  const [showPerf, setShowPerf] = useState(false);
+  const perfSceneRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    setShowPerf(params.get("perf") === "1");
+  }, []);
+
+  // Lazy-mount the particle layer only when the hero is near the viewport.
+  const particlesAnchorRef = useRef<HTMLDivElement | null>(null);
+  const particlesReady = useInViewport(particlesAnchorRef, "300px 0px");
+  const reducedMotion = usePrefersReducedMotion();
+
   return (
     <div className="landing-stage relative min-h-screen flex flex-col">
+      {/* Anchor used by the particle IntersectionObserver — zero size, top of stage. */}
+      <div ref={particlesAnchorRef} aria-hidden style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
+
       {/* Atmospheric background — fixed to viewport so it never overlaps scrolled content */}
       <div className="landing-bg landing-fixed" aria-hidden />
       <div className="landing-grain landing-fixed" aria-hidden />
-      {/* Particle dots */}
-      <div className="landing-particles landing-fixed" aria-hidden>
-        {Array.from({ length: 18 }).map((_, i) => (
-          <span key={i} className={`particle p-${i}`} />
-        ))}
-      </div>
+      {/* Particle dots — only mounted once the hero is near the viewport, and
+          skipped entirely when the user prefers reduced motion. */}
+      {particlesReady && !reducedMotion && (
+        <div className="landing-particles landing-fixed" aria-hidden>
+          {Array.from({ length: 18 }).map((_, i) => (
+            <span key={i} className={`particle p-${i}`} />
+          ))}
+        </div>
+      )}
 
-      {view === "welcome" ? <WelcomeView onStart={() => setView("form")} /> : (
+      {view === "welcome" ? (
+        <WelcomeView onStart={() => setView("form")} perfSceneRef={perfSceneRef} reducedMotion={reducedMotion} />
+      ) : (
         <FormView
           mode={mode}
           setMode={setMode}
@@ -95,18 +125,45 @@ function AuthPage() {
           onBack={() => setView("welcome")}
         />
       )}
+
+      <PerfOverlay sceneRef={perfSceneRef} enabled={showPerf} />
     </div>
   );
 }
 
-function WelcomeView({ onStart }: { onStart: () => void }) {
+function WelcomeView({
+  onStart,
+  perfSceneRef,
+  reducedMotion,
+}: {
+  onStart: () => void;
+  perfSceneRef: React.RefObject<HTMLDivElement | null>;
+  reducedMotion: boolean;
+}) {
   const sceneRef = useRef<HTMLDivElement | null>(null);
+  const previewRef = useRef<HTMLDivElement | null>(null);
+
+  // Lazy-mount the heavy 3D scene + interactive preview only when they're
+  // about to enter the viewport. Cheaper first paint on phones/tablets.
+  const sceneInView = useInViewport(sceneRef, "250px 0px");
+  const previewInView = useInViewport(previewRef, "300px 0px");
+
+  // Expose the scene element to the parent so the perf overlay can read its
+  // `.scene-paused` class.
+  useEffect(() => {
+    perfSceneRef.current = sceneRef.current;
+  }, [perfSceneRef, sceneInView]);
 
   // Pause expensive ambient animations when the scene scrolls off-screen.
   // Saves compositor work on mobile and dramatically reduces scroll jank.
   useEffect(() => {
     const el = sceneRef.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
+    // Reduced-motion users don't need the IO at all — animations are off.
+    if (reducedMotion) {
+      el.classList.add("scene-paused");
+      return;
+    }
     const io = new IntersectionObserver(
       ([entry]) => {
         el.classList.toggle("scene-paused", !entry.isIntersecting);
@@ -115,7 +172,7 @@ function WelcomeView({ onStart }: { onStart: () => void }) {
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <div className="relative z-10 w-full mx-auto px-5 sm:px-8 lg:px-12 pt-8 lg:pt-10 pb-10 max-w-md md:max-w-3xl lg:max-w-6xl xl:max-w-7xl">
@@ -131,37 +188,42 @@ function WelcomeView({ onStart }: { onStart: () => void }) {
       <div className="mt-4 lg:mt-10 grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-8 lg:gap-14 xl:gap-20 items-center">
         {/* LEFT: scene + copy + CTAs */}
         <div className="flex flex-col">
-          {/* 3D floating icon scene */}
+          {/* 3D floating icon scene — lazy-mounted, with a skeleton placeholder
+              that reserves the same footprint to prevent layout shift. */}
           <div ref={sceneRef} className="scene-frame mx-auto lg:mx-0">
-            <div className="floating-scene floating-scene-compact">
-              {/* Soft glow */}
-              <div className="scene-glow" aria-hidden />
+            {sceneInView ? (
+              <div className="floating-scene floating-scene-compact">
+                {/* Soft glow */}
+                <div className="scene-glow" aria-hidden />
 
-              {/* Tiny orbit dots */}
-              <span className="orbit-dot od-1" />
-              <span className="orbit-dot od-2" />
-              <span className="orbit-dot od-3" />
-              <span className="orbit-dot od-4" />
-              <span className="orbit-dash od-d1" />
-              <span className="orbit-dash od-d2" />
-              <span className="orbit-dash od-d3" />
+                {/* Tiny orbit dots */}
+                <span className="orbit-dot od-1" />
+                <span className="orbit-dot od-2" />
+                <span className="orbit-dot od-3" />
+                <span className="orbit-dot od-4" />
+                <span className="orbit-dash od-d1" />
+                <span className="orbit-dash od-d2" />
+                <span className="orbit-dash od-d3" />
 
-              <FloatIcon className="fi fi-1" delay="0s">
-                <Brain className="h-7 w-7 text-white" strokeWidth={1.8} />
-              </FloatIcon>
-              <FloatIcon className="fi fi-2" delay="-2s" big>
-                <Sparkles className="h-9 w-9 text-white" strokeWidth={1.8} />
-              </FloatIcon>
-              <FloatIcon className="fi fi-3" delay="-4s">
-                <BookOpen className="h-7 w-7 text-white" strokeWidth={1.8} />
-              </FloatIcon>
-              <FloatIcon className="fi fi-4" delay="-1s">
-                <MessageCircle className="h-6 w-6 text-white" strokeWidth={1.8} />
-              </FloatIcon>
-              <FloatIcon className="fi fi-5" delay="-3s">
-                <Flame className="h-6 w-6 text-white" strokeWidth={1.8} />
-              </FloatIcon>
-            </div>
+                <FloatIcon className="fi fi-1" delay="0s">
+                  <Brain className="h-7 w-7 text-white" strokeWidth={1.8} />
+                </FloatIcon>
+                <FloatIcon className="fi fi-2" delay="-2s" big>
+                  <Sparkles className="h-9 w-9 text-white" strokeWidth={1.8} />
+                </FloatIcon>
+                <FloatIcon className="fi fi-3" delay="-4s">
+                  <BookOpen className="h-7 w-7 text-white" strokeWidth={1.8} />
+                </FloatIcon>
+                <FloatIcon className="fi fi-4" delay="-1s">
+                  <MessageCircle className="h-6 w-6 text-white" strokeWidth={1.8} />
+                </FloatIcon>
+                <FloatIcon className="fi fi-5" delay="-3s">
+                  <Flame className="h-6 w-6 text-white" strokeWidth={1.8} />
+                </FloatIcon>
+              </div>
+            ) : (
+              <SceneSkeleton />
+            )}
           </div>
 
           {/* Copy */}
@@ -195,9 +257,16 @@ function WelcomeView({ onStart }: { onStart: () => void }) {
           </p>
         </div>
 
-        {/* RIGHT: interactive AI preview */}
-        <div className="w-full max-w-md mx-auto lg:max-w-xl lg:mx-0">
-          <LandingPreview />
+        {/* RIGHT: interactive AI preview — lazy-loaded, with a skeleton that
+            matches the final layout to prevent jump-on-mount. */}
+        <div ref={previewRef} className="w-full max-w-md mx-auto lg:max-w-xl lg:mx-0">
+          {previewInView ? (
+            <Suspense fallback={<LandingPreviewSkeleton />}>
+              <LandingPreview />
+            </Suspense>
+          ) : (
+            <LandingPreviewSkeleton />
+          )}
         </div>
       </div>
     </div>
