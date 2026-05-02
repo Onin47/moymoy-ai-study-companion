@@ -13,6 +13,7 @@ import { PerfOverlay } from "@/components/PerfOverlay";
 const LandingPreview = lazy(() =>
   import("@/components/LandingPreview").then((m) => ({ default: m.LandingPreview })),
 );
+import type { FeatureKey } from "@/components/LandingPreview";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -142,6 +143,7 @@ function WelcomeView({
 }) {
   const sceneRef = useRef<HTMLDivElement | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
+  const [selectedFeature, setSelectedFeature] = useState<FeatureKey>("ai");
 
   // Lazy-mount the heavy 3D scene + interactive preview only when they're
   // about to enter the viewport. Cheaper first paint on phones/tablets.
@@ -205,19 +207,19 @@ function WelcomeView({
                 <span className="orbit-dash od-d2" />
                 <span className="orbit-dash od-d3" />
 
-                <FloatIcon className="fi fi-1" delay="0s">
+                <FloatIcon className="fi fi-1" delay="0s" featureKey="notes" selected={selectedFeature === "notes"} onSelect={setSelectedFeature} label="Smart Notes">
                   <Brain className="h-7 w-7 text-white" strokeWidth={1.8} />
                 </FloatIcon>
-                <FloatIcon className="fi fi-2" delay="-2s" big>
+                <FloatIcon className="fi fi-2" delay="-2s" big featureKey="ai" selected={selectedFeature === "ai"} onSelect={setSelectedFeature} label="AI Generate">
                   <Sparkles className="h-9 w-9 text-white" strokeWidth={1.8} />
                 </FloatIcon>
-                <FloatIcon className="fi fi-3" delay="-4s">
+                <FloatIcon className="fi fi-3" delay="-4s" featureKey="flashcards" selected={selectedFeature === "flashcards"} onSelect={setSelectedFeature} label="Flashcards">
                   <BookOpen className="h-7 w-7 text-white" strokeWidth={1.8} />
                 </FloatIcon>
-                <FloatIcon className="fi fi-4" delay="-1s">
+                <FloatIcon className="fi fi-4" delay="-1s" featureKey="chat" selected={selectedFeature === "chat"} onSelect={setSelectedFeature} label="AI Tutor">
                   <MessageCircle className="h-6 w-6 text-white" strokeWidth={1.8} />
                 </FloatIcon>
-                <FloatIcon className="fi fi-5" delay="-3s">
+                <FloatIcon className="fi fi-5" delay="-3s" featureKey="streak" selected={selectedFeature === "streak"} onSelect={setSelectedFeature} label="Daily Streak">
                   <Flame className="h-6 w-6 text-white" strokeWidth={1.8} />
                 </FloatIcon>
               </div>
@@ -262,7 +264,7 @@ function WelcomeView({
         <div ref={previewRef} className="w-full max-w-md mx-auto lg:max-w-xl lg:mx-0">
           {previewInView ? (
             <Suspense fallback={<LandingPreviewSkeleton />}>
-              <LandingPreview />
+              <LandingPreview feature={selectedFeature} />
             </Suspense>
           ) : (
             <LandingPreviewSkeleton />
@@ -274,18 +276,33 @@ function WelcomeView({
 }
 
 function FloatIcon({
-  className, children, delay, big,
-}: { className: string; children: React.ReactNode; delay: string; big?: boolean }) {
+  className, children, delay, big, featureKey, selected, onSelect, label,
+}: {
+  className: string;
+  children: React.ReactNode;
+  delay: string;
+  big?: boolean;
+  featureKey: FeatureKey;
+  selected: boolean;
+  onSelect: (k: FeatureKey) => void;
+  label: string;
+}) {
   return (
-    <div
-      className={`float-icon ${big ? "float-icon-lg" : ""} ${className}`}
+    <button
+      type="button"
+      onClick={() => onSelect(featureKey)}
+      aria-pressed={selected}
+      aria-label={label}
+      title={label}
+      className={`float-icon ${big ? "float-icon-lg" : ""} ${selected ? "is-selected" : ""} ${className}`}
       style={{ animationDelay: delay }}
     >
       <div className="float-icon-inner">
         <div className="float-icon-shine" />
         {children}
+        <span className="float-icon-label" aria-hidden>{label}</span>
       </div>
-    </div>
+    </button>
   );
 }
 
