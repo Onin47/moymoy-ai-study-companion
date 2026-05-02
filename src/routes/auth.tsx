@@ -13,6 +13,7 @@ import { PerfOverlay } from "@/components/PerfOverlay";
 const LandingPreview = lazy(() =>
   import("@/components/LandingPreview").then((m) => ({ default: m.LandingPreview })),
 );
+import type { FeatureKey } from "@/components/LandingPreview";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
